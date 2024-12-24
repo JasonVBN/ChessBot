@@ -7,4 +7,4 @@ class Bishop(Piece):
         self.pos = newpos
 
     def __str__(self):
-        return 'B'
+        return self.color+'B'

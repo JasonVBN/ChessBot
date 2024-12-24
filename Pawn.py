@@ -17,4 +17,4 @@ class Pawn(Piece):
         self.pos = newpos
 
     def __str__(self):
-        return 'P'
+        return self.color+'P'
