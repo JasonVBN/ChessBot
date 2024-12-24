@@ -1,4 +1,4 @@
 from Piece import Piece
-class Knight(Piece):
+class King(Piece):
     def __str__(self):
-        return 'N'
+        return 'K'
