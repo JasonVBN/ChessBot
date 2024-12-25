@@ -40,18 +40,45 @@ class Board:
     def legalMovesFrom(self, pos) -> list:
         if self.grid[pos] is None:
             return []
-        r,c = pos
+        startR,startC = pos
         ans = []
         thisColor = self.grid[pos].color
+
         if isinstance(self.grid[pos],Knight):
             deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
             for dr,dc in deltas:
-                newpos = (r+dr,c+dc)
+                newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
                     ans.append(newpos)
+        elif isinstance(self.grid[pos],Pawn):
+            '''
+            4 cases:
+            forward 1
+            forward 2 (if on starting row - 6 for white, 1 for black)
+            take left
+            take right
+            '''
+        else:
+            if isinstance(self.grid[pos],Bishop):
+                deltas = [(1,1), (1,-1), (-1,1), (-1,-1)]
+                for dr,dc in deltas:
+                    r,c=startR,startC
+                    while Board.inBounds((r,c)):
+                        if self.grid[(r,c)] is None:
+                            ans.append((r,c))
+                        elif self.grid[(r,c)].color != thisColor:
+                            ans.append((r,c))
+                            break
+                        else:
+                            break
+                        r,c = r+dr,c+dc
 
         return ans
+
+    def move(self, start, dest):
+        self.grid[dest] = self.grid[start]
+        self.grid[start] = None
 
     def __str__(self):
         ans='   0  1  2  3  4  5  6  7\n'
