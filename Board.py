@@ -118,7 +118,8 @@ class Board:
                 if self.grid[r,c] is not None and self.grid[r,c].color != color:
                     squaresHit = self.legalMovesFrom((r,c))
                     for pos in squaresHit:
-                        if isinstance(self.grid[pos], King):
+                        if pos == kingPos:
+                            self.checkpos = pos
                             return True
 
 
