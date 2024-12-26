@@ -45,36 +45,32 @@ class Board:
         piece = self.grid[pos]
         thisColor = piece.color
 
-        if isinstance(piece,Knight):
+        if isinstance(piece,Pawn):
+            '''
+            4 cases:
+            forward 1, forward 2 (if on starting row - 6 for white, 1 for black)
+            take left, take right
+            '''
+            dir = -1 if piece.color=='w' else +1
+            if self.grid[startR+dir, startC] is None:
+                ans.append((startR+dir, startC))    # forward 1
+                if self.grid[startR+2*dir, startC] is None:
+                    ans.append((startR+2*dir, startC))  # forward 2
+            for dc in [-1,1]:
+                if 0 <= startC+dc <= 7:
+                    diag = self.grid[startR+dir, startC+dc]
+                    if diag is not None and diag.color != thisColor:
+                        ans.append((startR+dir, startC+dc))
+
+        elif isinstance(piece,Knight):
             deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
                     ans.append(newpos)
-        elif isinstance(piece,Pawn):
-            '''
-            4 cases:
-            forward 1
-            forward 2 (if on starting row - 6 for white, 1 for black)
-            take left
-            take right
-            '''
-            dir = -1 if piece.color=='w' else +1
-            if self.grid[startR+dir, startC] is None:
-                ans.append((startR+dir, startC))
-                if self.grid[startR+2*dir, startC] is None:
-                    ans.append((startR+2*dir, startC))
-            if startC-1 >= 0:
-                diagLeft = self.grid[startR+dir, startC-1]
-                if diagLeft is not None and diagLeft.color != thisColor:
-                    ans.append((startR+dir, startC-1))
-            if startC+1 <= 7:
-                diagRight = self.grid[startR+dir, startC+1]
-                if diagRight is not None and diagRight.color != thisColor:
-                    ans.append((startR+dir, startC+1))
 
-        else: # Bishop (aka Bitch), Rook, Queen
+        else: # Bishop (Bitch), Rook, Queen
             deltas = (
                 [(1,1), (1,-1), (-1,1), (-1,-1)] if isinstance(piece,Bishop) else
                 [(1,0), (-1,0), (0,1), (0,-1)] if isinstance(piece,Rook) else
@@ -98,6 +94,18 @@ class Board:
     def move(self, start, dest):
         self.grid[dest] = self.grid[start]
         self.grid[start] = None
+
+    def inCheck(self, color) -> bool:
+        assert color == 'w' or color == 'b'
+
+        '''
+        pseudo-code:
+        go thru all pieces of the opposite color as *color*.
+        run legalMovesFrom() on that square.
+        if any of those squares contain King, return True
+        '''
+
+        return False
 
     def __str__(self):
         ans='   0  1  2  3  4  5  6  7\n'
