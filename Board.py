@@ -69,7 +69,13 @@ class Board:
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
                     ans.append(newpos)
-
+        elif isinstance(piece, King):
+            deltas = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+            for dr,dc in deltas:
+                newpos = (startR+dr,startC+dc)
+                if (Board.inBounds(newpos) and
+                        (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
+                    ans.append(newpos)
         else: # Bishop (Bitch), Rook, Queen
             deltas = (
                 [(1,1), (1,-1), (-1,1), (-1,-1)] if isinstance(piece,Bishop) else
