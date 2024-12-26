@@ -1,4 +1,4 @@
-from Board import Board
+from Board2 import Board
 board = Board()
 print(board)
 print("Squares are represented by 2-digit sequences [row][col]")
@@ -22,6 +22,12 @@ while True:
     if board.inCheck('w'):
         print("white is in check")
     elif board.inCheck('b'):
-        print("big black pp is in check")
+        print("black is in check")
     else:
         print("no one is in check")
+
+    if board.isMated('w'): print('white is mated')
+    elif board.isMated('b'): print('black is mated (we love mating black things)')
+    else: print('no one is mated')
+
+    print()
