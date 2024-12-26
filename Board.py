@@ -103,7 +103,7 @@ class Board:
         self.grid[dest] = self.grid[start]
         self.grid[start] = None
 
-    def inCheck(self, color) -> bool:
+    def inCheck(self, color, kingPos) -> bool:
         assert color == 'w' or color == 'b'
 
         '''
@@ -133,8 +133,11 @@ class Board:
         '''
         if self.checkpos != None:
             moves = self.legalMovesFrom(self.checkpos)
-
-
+            c= 0
+            for move in moves:
+                self.inCheck(color, move)
+            if c == len(moves):
+                return True
 
         return True
 
