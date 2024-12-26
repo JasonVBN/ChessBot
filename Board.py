@@ -8,6 +8,7 @@ from King import King
 
 class Board:
     def __init__(self):
+        self.checkpos = None
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
         for row,color in [(0,'b'),(7,'w')]:
             self.grid[row,0] = Rook((row,0), color)
@@ -76,6 +77,7 @@ class Board:
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
                     ans.append(newpos)
+
         else: # Bishop (Bitch), Rook, Queen
             deltas = (
                 [(1,1), (1,-1), (-1,1), (-1,-1)] if isinstance(piece,Bishop) else
@@ -111,7 +113,30 @@ class Board:
         if any of those squares contain King, return True
         '''
 
+        for r in range(8):
+            for c in range(8):
+                if self.grid[r,c] is not None and self.grid[r,c].color != color:
+                    squaresHit = self.legalMovesFrom((r,c))
+                    for pos in squaresHit:
+                        if isinstance(self.grid[pos], King):
+                            return True
+
+
         return False
+    def isMated(self, color):
+        '''
+        pseudo-code:
+        WLOG let's say color is 'w' (we're checking if white is checkmated)
+        try all possible moves that white can make
+        and if white is still in check after all of those moves, it's mate!
+        '''
+        if self.checkpos != None:
+            moves = self.legalMovesFrom(self.checkpos)
+
+
+
+        return True
+
 
     def __str__(self):
         ans='   0  1  2  3  4  5  6  7\n'

@@ -18,3 +18,10 @@ while True:
         print(board)
     else:
         print("not a legal move!")
+
+    if board.inCheck('w'):
+        print("white is in check")
+    elif board.inCheck('b'):
+        print("big black pp is in check")
+    else:
+        print("no one is in check")
