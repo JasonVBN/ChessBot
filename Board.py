@@ -42,16 +42,17 @@ class Board:
             return []
         startR,startC = pos
         ans = []
-        thisColor = self.grid[pos].color
+        piece = self.grid[pos]
+        thisColor = piece.color
 
-        if isinstance(self.grid[pos],Knight):
+        if isinstance(piece,Knight):
             deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
                     ans.append(newpos)
-        elif isinstance(self.grid[pos],Pawn):
+        elif isinstance(piece,Pawn):
             '''
             4 cases:
             forward 1
@@ -59,20 +60,38 @@ class Board:
             take left
             take right
             '''
-        else:
-            if isinstance(self.grid[pos],Bishop):
-                deltas = [(1,1), (1,-1), (-1,1), (-1,-1)]
-                for dr,dc in deltas:
-                    r,c=startR,startC
-                    while Board.inBounds((r,c)):
-                        if self.grid[(r,c)] is None:
-                            ans.append((r,c))
-                        elif self.grid[(r,c)].color != thisColor:
-                            ans.append((r,c))
-                            break
-                        else:
-                            break
-                        r,c = r+dr,c+dc
+            dir = -1 if piece.color=='w' else +1
+            if self.grid[startR+dir, startC] is None:
+                ans.append((startR+dir, startC))
+                if self.grid[startR+2*dir, startC] is None:
+                    ans.append((startR+2*dir, startC))
+            if startC-1 >= 0:
+                diagLeft = self.grid[startR+dir, startC-1]
+                if diagLeft is not None and diagLeft.color != thisColor:
+                    ans.append((startR+dir, startC-1))
+            if startC+1 <= 7:
+                diagRight = self.grid[startR+dir, startC+1]
+                if diagRight is not None and diagRight.color != thisColor:
+                    ans.append((startR+dir, startC+1))
+
+        else: # Bishop (aka Bitch), Rook, Queen
+            deltas = (
+                [(1,1), (1,-1), (-1,1), (-1,-1)] if isinstance(piece,Bishop) else
+                [(1,0), (-1,0), (0,1), (0,-1)] if isinstance(piece,Rook) else
+                [(1, 1), (1, -1), (-1, 1), (-1, -1), (1,0), (-1,0), (0,1), (0,-1)]
+            )
+
+            for dr,dc in deltas:
+                r,c = startR+dr, startC+dc
+                while Board.inBounds((r,c)):
+                    if self.grid[(r,c)] is None:
+                        ans.append((r,c))
+                    elif self.grid[(r,c)].color != thisColor:
+                        ans.append((r,c))
+                        break
+                    else:
+                        break
+                    r, c = r+dr, c+dc
 
         return ans
 

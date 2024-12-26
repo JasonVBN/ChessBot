@@ -15,6 +15,6 @@ while True:
 
     if dest in legal:
         board.move(start,dest)
+        print(board)
     else:
         print("not a legal move!")
-    print(board)
