@@ -7,26 +7,25 @@ from Queen import Queen
 from King import King
 
 class Board:
-    def __init__(self):
+    DEFAULT_SETUP = np.array([
+        ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+        ['bP','bP','bP','bP','bP','bP','bP','bP'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['wP','wP','wP','wP','wP','wP','wP','wP'],
+        ['wR','wN','wB','wQ','wK','wB','wN','wR']
+    ])
+    encoding = {'P':Pawn,'N':Knight,'B':Bishop,'R':Rook,'Q':Queen,'K':King}
+    def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
-        for row,color in [(0,'b'),(7,'w')]:
-            self.grid[row,0] = Rook((row,0), color)
-            self.grid[row,1] = Knight((row,1), color)
-            self.grid[row,2] = Bishop((row,2), color)
-            # this is so f---ing tedious
-            self.grid[row,3] = Queen((row,3), color)
-            self.grid[row,4] = King((row,4), color)
-            self.grid[row,5] = Bishop((row,5), color)
-            # why didn't we just use strings...
-            self.grid[row,6] = Knight((row,6), color)
-            self.grid[row,7] = Rook((row,7), color)
-
-        for c in range(8):
-            self.grid[1,c]=Pawn((1,c),'b')
-
-        for c in range(8):
-            self.grid[6,c]=Pawn((6,c),'w')
+        for r in range(8):
+            for c in range(8):
+                if setup[r,c] != '.':
+                    col,ptype = setup[r,c]
+                    self.grid[r,c] = Board.encoding[ptype]((r,c),col)
 
     def update(self): #updates the state of the board after each move
         pass
@@ -38,7 +37,22 @@ class Board:
     def inBounds(tup):
         return 0<=tup[0]<=7 and 0<=tup[1]<=7
 
-    def legalMovesFrom(self, pos) -> list:
+    def doesntWalkIntoMate(self, start, dest):
+        # make the move
+        captured = self.grid[dest]
+        self.grid[dest] = self.grid[start]
+        self.grid[start] = None
+
+        # check whether inCheck
+        inCheck = self.inCheck(self.grid[dest].color)
+
+        # UNDO the move
+        self.grid[start] = self.grid[dest]
+        self.grid[dest] = captured
+
+        return not inCheck
+
+    def squaresSeenFrom(self, pos) -> list:
         if self.grid[pos] is None:
             return []
         startR,startC = pos
@@ -96,8 +110,12 @@ class Board:
                     else:
                         break
                     r, c = r+dr, c+dc
-
         return ans
+
+    def legalMovesFrom(self, pos) -> list:
+        return [dest for dest in self.squaresSeenFrom(pos) if self.doesntWalkIntoMate(pos,dest)]
+
+
 
     def move(self, start, dest):
         pieceToMove = self.grid[start]
@@ -122,7 +140,7 @@ class Board:
         for r in range(8):
             for c in range(8):
                 if self.grid[r,c] is not None and self.grid[r,c].color != color:
-                    squaresHit = self.legalMovesFrom((r,c))
+                    squaresHit = self.squaresSeenFrom((r,c))
                     for pos in squaresHit:
                         #if pos == self.kingPos[color]:
                         if isinstance(self.grid[pos],King):
@@ -137,7 +155,7 @@ class Board:
         try all possible moves that white can make
         and if white is still in check after all of those moves, it's mate!
         '''
-        print(f"* running isMated on {color} *")
+        # print(f"* running isMated on {color} *")
         if not self.inCheck(color): return False
 
         for r in range(8):
