@@ -1,4 +1,6 @@
 import numpy as np
+
+from Move import Move
 from Pawn import Pawn
 from Knight import Knight
 from Bishop import Bishop
@@ -23,12 +25,9 @@ class Board:
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
         for r in range(8):
             for c in range(8):
-                if setup[r,c] != '.':
+                if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
                     self.grid[r,c] = Board.encoding[ptype]((r,c),col)
-
-    def update(self): #updates the state of the board after each move
-        pass
 
     def isEmpty(self, pos): #checks if the specified position is empty or not. Empty -> (false). Not Empty -> (true, piece)
         pass
@@ -69,7 +68,8 @@ class Board:
             dir = -1 if piece.color=='w' else +1
             if self.grid[startR+dir, startC] is None:
                 ans.append((startR+dir, startC))    # forward 1
-                if self.grid[startR+2*dir, startC] is None:
+                if ((piece.color=='w' and startR==6) or
+                    (piece.color=='b' and startR==1)) and self.grid[startR+2*dir, startC] is None:
                     ans.append((startR+2*dir, startC))  # forward 2
             for dc in [-1,1]:
                 if 0 <= startC+dc <= 7:
@@ -115,7 +115,15 @@ class Board:
     def legalMovesFrom(self, pos) -> list:
         return [dest for dest in self.squaresSeenFrom(pos) if self.doesntWalkIntoMate(pos,dest)]
 
-
+    def allLegalMoves(self,color) -> list:
+        ans = []
+        for r in range(8):
+            for c in range(8):
+                start=(r,c)
+                if self.grid[start] is not None and self.grid[start].color == color:
+                    for dest in self.legalMovesFrom(start):
+                        ans.append(Move(start,dest))
+        return ans
 
     def move(self, start, dest):
         pieceToMove = self.grid[start]
@@ -125,7 +133,6 @@ class Board:
 
         self.grid[dest] = pieceToMove
         self.grid[start] = None
-
 
 
     def inCheck(self, color) -> bool:
@@ -142,7 +149,6 @@ class Board:
                 if self.grid[r,c] is not None and self.grid[r,c].color != color:
                     squaresHit = self.squaresSeenFrom((r,c))
                     for pos in squaresHit:
-                        #if pos == self.kingPos[color]:
                         if isinstance(self.grid[pos],King):
                             return True
 
@@ -155,31 +161,11 @@ class Board:
         try all possible moves that white can make
         and if white is still in check after all of those moves, it's mate!
         '''
-        # print(f"* running isMated on {color} *")
+
+        # lol nevermind. much easier way:
+
         if not self.inCheck(color): return False
-
-        for r in range(8):
-            for c in range(8):
-                start=(r,c)
-                if self.grid[start] is not None and self.grid[start].color == color:
-                    for dest in self.legalMovesFrom(start):
-                        captured = self.grid[dest]
-
-                        # make the move
-                        self.grid[dest] = self.grid[start]
-                        self.grid[start] = None
-
-                        # check whether still inCheck
-                        stillChecked = self.inCheck(color)
-
-                        # UNDO the move to prep for next candidate move
-                        self.grid[start] = self.grid[dest]
-                        self.grid[dest] = captured
-
-                        if not stillChecked:
-                            return False
-
-        return True
+        return len(self.allLegalMoves(color)) == 0
 
     def __str__(self):
         ans='   0  1  2  3  4  5  6  7\n'

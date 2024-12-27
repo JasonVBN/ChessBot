@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 from Board2 import Board
 from ForcedMate import Mater
 from Pawn import Pawn
@@ -8,77 +8,88 @@ from Bishop import Bishop
 from Rook import Rook
 from Queen import Queen
 
+# back rank mate in 2:
+# setup = np.array([
+#     ['bR','.','.','.','.','.','bK','.'],
+#     ['.','.','.','.','.','bP','bP','bP'],
+#     ['.','.','.','.','.','.','.','.'],
+#     ['.','.','.','.','.','.','.','.'],
+#     ['.','.','.','.','.','.','.','.'],
+#     ['.','.','.','.','.','.','.','.'],
+#     ['.','.','wR','.','.','.','.','.'],
+#     ['.','.','wR','.','.','.','wK','.']
+# ])
+
+# rook sac mate in 3:
 setup = np.array([
-    ['bR','.','.','.','.','.','bK','.'],
-    ['.','.','.','.','.','bP','bP','bP'],
+    ['.','.','.','.','.','bR','bK','.'],
+    ['.','.','.','bP','.','.','bP','.'],
+    ['.','.','.','.','bP','.','wP','.'],
     ['.','.','.','.','.','.','.','.'],
     ['.','.','.','.','.','.','.','.'],
     ['.','.','.','.','.','.','.','.'],
     ['.','.','.','.','.','.','.','.'],
-    ['.','.','wR','.','.','.','.','.'],
-    ['.','.','wR','.','.','.','wK','.']
+    ['.','.','wK','wQ','.','.','.','wR']
 ])
-# setup = np.array([
-#     ['.','.','.','.','.','bR','bK','.'],
-#     ['.','.','.','bP','.','.','bP','.'],
-#     ['.','.','.','.','bP','.','wP','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','wK','wQ','.','.','.','wR']
-# ])
-# setup = np.array([
-#     ['.','.','.','.','bR','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','bP','.','bR','.','wP','.'],
-#     ['.','.','wB','.','.','.','.','.'],
-#     ['bK','wP','.','wP','.','.','.','.'],
-#     ['.','.','.','wK','bN','.','.','wP'],
-#     ['.','.','wP','.','wR','.','wP','.'],
-#     ['.','.','.','.','wR','.','.','.']
-# ])
+
 board = Board(setup=setup)
 
-print(board)
+print("Computer is white, you are black")
 print("Squares are represented by 2-digit sequences [row][col]")
 print("For example '00' is top left square, '77' is bottom right square")
 
+print(board)
+
+turn = 'w'
 while True:
+    if turn == 'w':
+        startTime = time.time()
+        mater = Mater(board)
+
+        found, move, n = mater.findMate('w',3)
+        if found:
+            print(f"mate in {n} found starting with: {move}")
+        else:
+            print("no mate found :(")
+
+        board.move(move.start, move.dest)
+        elapsedTime = time.time() - startTime
+        print(f"Move time: {elapsedTime}")
+        turn = 'b'
+    else:
+        print("Computer has made its move. Your turn!")
+
+        while True:
+            ipt = input("Enter START square: ")
+            start = (int(ipt[0]), int(ipt[1]))
+            legal = board.legalMovesFrom(start)
+            if len(legal) == 0:
+                print("no legal moves from here!")
+                continue
+
+            print("legal moves:", legal)
+
+            ipt = input("Enter DEST square: ")
+            dest = (int(ipt[0]), int(ipt[1]))
+            print(board)
+            if dest in legal:
+                board.move(start, dest)
+                break
+            else:
+                print("not a legal move!")
+        turn = 'w'
+
+    print(board)
+
+    if board.isMated('w'):
+        print('BLACK WINS')
+        break
+    elif board.isMated('b'):
+        print('WHITE WINS')
+        break
+
     if board.inCheck('w'): print("white is in check")
     elif board.inCheck('b'): print("black is in check")
     else: print("no one is in check")
-
-    if board.isMated('w'): print('white is mated')
-    elif board.isMated('b'): print('black is mated (we love mating black things)')
-    else: print('no one is mated')
-
-    mater = Mater(board)
-
-    found,move = mater.findMateIn1('w')
-    if found: print(f"mate in 1 found for w: {move}")
-    else:
-        print("no mate in 1 found")
-        found, move = mater.findMateIn2('w')
-        if found: print(f"mate in 2 found for w, starting with: {move}")
-        else:
-            print("no mate in 2 found")
-            found, move = mater.findMateIn3('w')
-            if found: print(f"mate in 3 found for w, starting with: {move}")
-            else: print("no mate in 3 found")
-
-    ipt = input("Enter START square: ")
-    start = (int(ipt[0]), int(ipt[1]))
-    legal = board.legalMovesFrom(start)
-    print("legal moves:", legal)
-
-    ipt = input("Enter DEST square: ")
-    dest = (int(ipt[0]), int(ipt[1]))
-    print(board)
-    if dest in legal:
-        board.move(start,dest)
-        print(board)
-    else:
-        print("not a legal move!")
 
     print()
