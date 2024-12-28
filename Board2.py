@@ -42,17 +42,12 @@ class Board:
 
     def doesntWalkIntoMate(self, start, dest):
         # make the move
-        captured = self.grid[dest]
-        # self.grid[dest] = self.grid[start]
-        # self.grid[start] = None
-        self.move(start,dest)
+        captured = self.move(start,dest)
 
         # check whether inCheck
         inCheck = self.inCheck(self.grid[dest].color)
 
         # UNDO the move
-        # self.grid[start] = self.grid[dest]
-        # self.grid[dest] = captured
         self.undo(start,dest,captured)
 
         return not inCheck
@@ -165,7 +160,6 @@ class Board:
                 if self.grid[r,c] is not None and self.grid[r,c].color != color:
                     squaresHit = self.squaresSeenFrom((r,c))
                     for pos in squaresHit:
-                        # if isinstance(self.grid[pos],King):
                         if pos == self.kingPos[color]:
                             return True
 

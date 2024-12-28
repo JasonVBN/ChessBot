@@ -1,7 +1,6 @@
 from Board2 import Board
 from Move import Move
 
-
 class Mater:
     def __init__(self, board):
         self.board = board
@@ -27,19 +26,14 @@ class Mater:
     def findMateIn1(self, color):
         for move in self.allLegalMoves(color):
             start,dest = move.start,move.dest
-            captured = self.board.grid[dest]
 
             # make the move
-            # self.board.grid[dest] = self.board.grid[start]
-            # self.board.grid[start] = None
-            self.board.move(start,dest)
+            captured = self.board.move(start,dest)
 
             # check if it's mate
             mate = self.board.isMated('w' if color=='b' else 'b')
 
             # UNDO the move to prep for next candidate move
-            # self.board.grid[start] = self.board.grid[dest]
-            # self.board.grid[dest] = captured
             self.board.undo(start,dest,captured)
 
             if mate:
@@ -53,26 +47,18 @@ class Mater:
         for ourmove in self.allLegalMoves(color):
             # print(f"Trying: {ourmove}")
             ourstart, ourdest = ourmove.start, ourmove.dest
-            ourcaptured = self.board.grid[ourdest]
 
             # make the move
-            # self.board.grid[ourdest] = self.board.grid[ourstart]
-            # self.board.grid[ourstart] = None
-            self.board.move(ourstart,ourdest)
+            ourcaptured = self.board.move(ourstart,ourdest)
 
             found = True
             for theirmove in self.allLegalMoves('w' if color == 'b' else 'b'):
                 # print(f"- If they go {theirmove}")
                 start2, dest2 = theirmove.start, theirmove.dest
-                captured2 = self.get(dest2)
-                # self.board.grid[dest2] = self.get(start2)
-                # self.board.grid[start2] = None
-                self.board.move(start2,dest2)
+                captured2 = self.board.move(start2,dest2)
 
-                mate, nextmove = self.findMateInX(color, depth-1)
+                mate, nextmove = self.findMateInX(color, depth-1) # recursive call
 
-                # self.board.grid[start2] = self.board.grid[dest2]
-                # self.board.grid[dest2] = captured2
                 self.board.undo(start2,dest2,captured2)
 
                 if not mate:
@@ -80,8 +66,6 @@ class Mater:
                     break
 
             # UNDO the move to prep for next candidate move
-            # self.board.grid[ourstart] = self.board.grid[ourdest]
-            # self.board.grid[ourdest] = ourcaptured
             self.board.undo(ourstart, ourdest, ourcaptured)
 
             if found:
