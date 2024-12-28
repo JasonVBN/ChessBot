@@ -30,53 +30,59 @@ class Mater:
             captured = self.board.grid[dest]
 
             # make the move
-            self.board.grid[dest] = self.board.grid[start]
-            self.board.grid[start] = None
+            # self.board.grid[dest] = self.board.grid[start]
+            # self.board.grid[start] = None
+            self.board.move(start,dest)
 
             # check if it's mate
             mate = self.board.isMated('w' if color=='b' else 'b')
 
             # UNDO the move to prep for next candidate move
-            self.board.grid[start] = self.board.grid[dest]
-            self.board.grid[dest] = captured
+            # self.board.grid[start] = self.board.grid[dest]
+            # self.board.grid[dest] = captured
+            self.board.undo(start,dest,captured)
 
             if mate:
                 return True,Move(start,dest)
         return False,Move()
 
     def findMateInX(self, color, depth):
-        if depth>=3: print(f"{'-'*depth} searching for mate in {depth}")
+        # print(f"{'-'*depth} searching for mate in {depth}")
         if depth==1:
             return self.findMateIn1(color)
         for ourmove in self.allLegalMoves(color):
-            print(f"Trying: {ourmove}")
+            # print(f"Trying: {ourmove}")
             ourstart, ourdest = ourmove.start, ourmove.dest
             ourcaptured = self.board.grid[ourdest]
 
             # make the move
-            self.board.grid[ourdest] = self.board.grid[ourstart]
-            self.board.grid[ourstart] = None
+            # self.board.grid[ourdest] = self.board.grid[ourstart]
+            # self.board.grid[ourstart] = None
+            self.board.move(ourstart,ourdest)
 
             found = True
             for theirmove in self.allLegalMoves('w' if color == 'b' else 'b'):
                 # print(f"- If they go {theirmove}")
                 start2, dest2 = theirmove.start, theirmove.dest
                 captured2 = self.get(dest2)
-                self.board.grid[dest2] = self.get(start2)
-                self.board.grid[start2] = None
+                # self.board.grid[dest2] = self.get(start2)
+                # self.board.grid[start2] = None
+                self.board.move(start2,dest2)
 
                 mate, nextmove = self.findMateInX(color, depth-1)
 
-                self.board.grid[start2] = self.board.grid[dest2]
-                self.board.grid[dest2] = captured2
+                # self.board.grid[start2] = self.board.grid[dest2]
+                # self.board.grid[dest2] = captured2
+                self.board.undo(start2,dest2,captured2)
 
                 if not mate:
                     found = False
                     break
 
             # UNDO the move to prep for next candidate move
-            self.board.grid[ourstart] = self.board.grid[ourdest]
-            self.board.grid[ourdest] = ourcaptured
+            # self.board.grid[ourstart] = self.board.grid[ourdest]
+            # self.board.grid[ourdest] = ourcaptured
+            self.board.undo(ourstart, ourdest, ourcaptured)
 
             if found:
                 return True, Move(ourstart, ourdest)

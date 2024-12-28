@@ -1,3 +1,4 @@
+import time
 from tkinter import *
 import numpy as np
 from Board2 import Board
@@ -41,11 +42,14 @@ def solve():
 
     mater = Mater(board)
 
-    found, move, n = mater.findMate('w', 4)
+    startTime = time.time()
+    found, move, n = mater.findMate('w', 3)
     if found:
         print(f"mate in {n} found starting with: {move}")
     else:
         print("no mate found :(")
+    elapsedTime = time.time()-startTime
+    print(f"computing time: {elapsedTime}")
 
     board.move(move.start, move.dest)
     update(board)
@@ -62,6 +66,20 @@ def setup_br2():
             ['.','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','wK','.']
+        ])
+    ))
+
+def setup_br3():
+    update(Board(
+        np.array([
+            ['bR','bR','.','.','.','.','bK','.'],
+            ['.','.','.','.','.','bP','bP','bP'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','wK','.']
         ])
@@ -86,5 +104,8 @@ B2.grid(row=11,column=0,columnspan=3)
 
 B3=Button(root, text="Setup: backrank M2", command=setup_br2)
 B3.grid(row=11,column=3,columnspan=3)
+
+B4=Button(root, text="Setup: backrank M3", command=setup_br3)
+B4.grid(row=11,column=6,columnspan=3)
 
 root.mainloop()

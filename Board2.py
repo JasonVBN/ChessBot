@@ -27,7 +27,11 @@ class Board:
             for c in range(8):
                 if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
-                    self.grid[r,c] = Board.encoding[ptype]((r,c),col)
+                    newpiece = Board.encoding[ptype]((r,c),col)
+                    self.grid[r,c] = newpiece
+                    if isinstance(newpiece,King):
+                        self.kingPos[newpiece.color] = (r,c)
+        print("kingpos:",self.kingPos)
 
     def isEmpty(self, pos): #checks if the specified position is empty or not. Empty -> (false). Not Empty -> (true, piece)
         pass
@@ -39,15 +43,17 @@ class Board:
     def doesntWalkIntoMate(self, start, dest):
         # make the move
         captured = self.grid[dest]
-        self.grid[dest] = self.grid[start]
-        self.grid[start] = None
+        # self.grid[dest] = self.grid[start]
+        # self.grid[start] = None
+        self.move(start,dest)
 
         # check whether inCheck
         inCheck = self.inCheck(self.grid[dest].color)
 
         # UNDO the move
-        self.grid[start] = self.grid[dest]
-        self.grid[dest] = captured
+        # self.grid[start] = self.grid[dest]
+        # self.grid[dest] = captured
+        self.undo(start,dest,captured)
 
         return not inCheck
 
@@ -131,9 +137,19 @@ class Board:
         if isinstance(pieceToMove,King):
             self.kingPos[pieceToMove.color] = dest
 
+        captured = self.grid[dest]
         self.grid[dest] = pieceToMove
         self.grid[start] = None
+        return captured
 
+    def undo(self, start, dest, captured):
+        pieceToMove = self.grid[dest]
+        # if we're moving a King, update kingPos:
+        if isinstance(pieceToMove, King):
+            self.kingPos[pieceToMove.color] = start
+
+        self.grid[start] = pieceToMove
+        self.grid[dest] = captured
 
     def inCheck(self, color) -> bool:
         assert color == 'w' or color == 'b'
@@ -149,7 +165,8 @@ class Board:
                 if self.grid[r,c] is not None and self.grid[r,c].color != color:
                     squaresHit = self.squaresSeenFrom((r,c))
                     for pos in squaresHit:
-                        if isinstance(self.grid[pos],King):
+                        # if isinstance(self.grid[pos],King):
+                        if pos == self.kingPos[color]:
                             return True
 
         return False
