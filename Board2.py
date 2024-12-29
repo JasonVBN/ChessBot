@@ -23,12 +23,12 @@ class Board:
     def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
-        self.pieceLocations = {'w':set(), 'b':set()}
+        self.pieceLocations = {'w':[], 'b':[]}
         for r in range(8):
             for c in range(8):
                 if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
-                    self.pieceLocations[col].add((r,c))
+                    self.pieceLocations[col].append((r,c))
                     newpiece = Board.encoding[ptype]((r,c),col)
                     self.grid[r,c] = newpiece
                     if isinstance(newpiece,King):
@@ -140,8 +140,8 @@ class Board:
         self.grid[dest] = pieceToMove
         self.grid[start] = None
 
-        self.pieceLocations[pieceToMove.color].remove(start)
-        self.pieceLocations[pieceToMove.color].add(dest)
+        arr = self.pieceLocations[pieceToMove.color]
+        arr[arr.index(start)] = dest
         if captured is not None:
             otherColor = 'w' if pieceToMove.color=='b' else 'b'
             self.pieceLocations[otherColor].remove(dest)
@@ -156,11 +156,11 @@ class Board:
         self.grid[start] = pieceToMove
         self.grid[dest] = captured
 
-        self.pieceLocations[pieceToMove.color].remove(dest)
-        self.pieceLocations[pieceToMove.color].add(start)
+        arr = self.pieceLocations[pieceToMove.color]
+        arr[arr.index(dest)] = start
         if captured is not None:
             otherColor = 'w' if pieceToMove.color=='b' else 'b'
-            self.pieceLocations[otherColor].add(dest)
+            self.pieceLocations[otherColor].append(dest)
 
     # original (brute force) version of inCheck. not used.
     def inCheckSlow(self, color) -> bool:
