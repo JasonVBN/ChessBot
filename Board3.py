@@ -1,12 +1,6 @@
 import numpy as np
-
 from Move import Move
-from Pawn import Pawn
-from Knight import Knight
-from Bishop import Bishop
-from Rook import Rook
-from Queen import Queen
-from King import King
+
 
 class Board:
     DEFAULT_SETUP = np.array([
@@ -19,7 +13,6 @@ class Board:
         ['wP','wP','wP','wP','wP','wP','wP','wP'],
         ['wR','wN','wB','wQ','wK','wB','wN','wR']
     ])
-    encoding = {'P':Pawn,'N':Knight,'B':Bishop,'R':Rook,'Q':Queen,'K':King}
     def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
@@ -29,11 +22,10 @@ class Board:
                 if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
                     # self.pieceLocations[col].append((r,c))
-                    newpiece = Board.encoding[ptype]((r,c),col)
-                    self.grid[r,c] = newpiece
-                    if isinstance(newpiece,King):
-                        self.kingPos[newpiece.color] = (r,c)
-        print("using piece objects")
+                    self.grid[r,c] = setup[r,c]
+                    if ptype=='K':
+                        self.kingPos[col] = (r,c)
+        print("using string rep of pieces")
 
     def isEmpty(self, pos): #checks if the specified position is empty or not. Empty -> (false). Not Empty -> (true, piece)
         pass
@@ -47,7 +39,7 @@ class Board:
         captured = self.move(start,dest)
 
         # check whether inCheck
-        inCheck = self.inCheck(self.grid[dest].color)
+        inCheck = self.inCheck(self.grid[dest][0])
 
         # UNDO the move
         self.undo(start,dest,captured)
@@ -60,46 +52,46 @@ class Board:
         startR,startC = pos
         ans = []
         piece = self.grid[pos]
-        thisColor = piece.color
+        thisColor = piece[0]
 
-        if isinstance(piece,Pawn):
+        if piece[1]=='P':
             '''
             4 cases:
             forward 1, forward 2 (if on starting row - 6 for white, 1 for black)
             take left, take right
             '''
-            dir = -1 if piece.color=='w' else +1
+            dir = -1 if piece[0]=='w' else +1
             if 0 <= startR+dir <= 7 and self.grid[startR+dir, startC] is None:
                 ans.append((startR+dir, startC))    # forward 1
-                if ((piece.color=='w' and startR==6) or
-                    (piece.color=='b' and startR==1)) and self.grid[startR+2*dir, startC] is None:
+                if ((piece[0]=='w' and startR==6) or
+                    (piece[0]=='b' and startR==1)) and self.grid[startR+2*dir, startC] is None:
                     ans.append((startR+2*dir, startC))  # forward 2
             for dc in [-1,1]:
                 newpos = (startR+dir, startC+dc)
                 if Board.inBounds(newpos):
                     diag = self.grid[newpos]
-                    if diag is not None and diag.color != thisColor:
+                    if diag is not None and diag[0] != thisColor:
                         ans.append(newpos)
 
-        elif isinstance(piece,Knight):
+        elif piece[1]=='N':
             deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
-                        (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
+                        (self.grid[newpos] is None or self.grid[newpos][0] != thisColor)):
                     ans.append(newpos)
-        elif isinstance(piece, King):
+        elif piece[1]=='K':
             deltas = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
-                        (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
+                        (self.grid[newpos] is None or self.grid[newpos][0] != thisColor)):
                     ans.append(newpos)
 
         else: # Bishop (Bitch), Rook, Queen
             deltas = (
-                [(1,1), (1,-1), (-1,1), (-1,-1)] if isinstance(piece,Bishop) else
-                [(1,0), (-1,0), (0,1), (0,-1)] if isinstance(piece,Rook) else
+                [(1,1), (1,-1), (-1,1), (-1,-1)] if piece[1]=='B' else
+                [(1,0), (-1,0), (0,1), (0,-1)] if piece[1]=='R' else
                 [(1, 1), (1, -1), (-1, 1), (-1, -1), (1,0), (-1,0), (0,1), (0,-1)]
             )
 
@@ -108,7 +100,7 @@ class Board:
                 while Board.inBounds((r,c)):
                     if self.grid[(r,c)] is None:
                         ans.append((r,c))
-                    elif self.grid[(r,c)].color != thisColor:
+                    elif self.grid[(r,c)][0] != thisColor:
                         ans.append((r,c))
                         break
                     else:
@@ -125,7 +117,7 @@ class Board:
             for c in range(8):
                 start=(r,c)
         # for start in self.pieceLocations[color].copy():
-                if self.grid[start] is not None and self.grid[start].color == color:
+                if self.grid[start] is not None and self.grid[start][0] == color:
                     for dest in self.legalMovesFrom(start):
                         ans.append(Move(start,dest))
         return ans
@@ -133,8 +125,8 @@ class Board:
     def move(self, start, dest):
         pieceToMove = self.grid[start]
         # if we're moving a King, update kingPos:
-        if isinstance(pieceToMove,King):
-            self.kingPos[pieceToMove.color] = dest
+        if pieceToMove[1]=='K':
+            self.kingPos[pieceToMove[0]] = dest
 
         captured = self.grid[dest]
         self.grid[dest] = pieceToMove
@@ -145,8 +137,8 @@ class Board:
     def undo(self, start, dest, captured):
         pieceToMove = self.grid[dest]
         # if we're moving a King, update kingPos:
-        if isinstance(pieceToMove, King):
-            self.kingPos[pieceToMove.color] = start
+        if pieceToMove[1]=='K':
+            self.kingPos[pieceToMove[0]] = start
 
         self.grid[start] = pieceToMove
         self.grid[dest] = captured
@@ -160,7 +152,7 @@ class Board:
         '''
         for r in range(8):
             for c in range(8):
-                if self.grid[r, c] is not None and self.grid[r, c].color != color:
+                if self.grid[r, c] is not None and self.grid[r, c][0] != color:
                     squaresHit = self.squaresSeenFrom((r, c))
                     for pos in squaresHit:
                         if pos == self.kingPos[color]:
@@ -175,21 +167,21 @@ class Board:
         for dr,dc in deltas:
             if Board.inBounds((kRow+dr,kCol+dc)):
                 piece = self.grid[kRow+dr,kCol+dc]
-                if (isinstance(piece,Knight) and piece.color != color):
+                if piece is not None and (piece[1]=='N' and piece[0] != color):
                     return True
 
         deltas = [(-1,-1),(-1,1)] if color=='w' else [(1,-1),(1,1)]
         for dr,dc in deltas:
             if Board.inBounds((kRow+dr,kCol+dc)):
                 piece = self.grid[kRow+dr,kCol+dc]
-                if (isinstance(piece,Pawn) and piece.color != color):
+                if piece is not None and (piece[1]=='P' and piece[0] != color):
                     return True
 
         deltas = [(1, 1), (1, -1), (-1, 1), (-1, -1), (1, 0), (-1, 0), (0, 1), (0, -1)]
         for dr, dc in deltas:
             if Board.inBounds((kRow + dr, kCol + dc)):
                 piece = self.grid[kRow + dr, kCol + dc]
-                if (isinstance(piece, King) and piece.color != color):
+                if piece is not None and (piece[1]=='K' and piece[0] != color):
                     return True
 
         deltas = [(1, 1), (1, -1), (-1, 1), (-1, -1)] # diagonals
@@ -198,7 +190,7 @@ class Board:
             while Board.inBounds((r, c)):
                 piece = self.grid[r,c]
                 if piece is not None:
-                    if isinstance(piece,(Bishop,Queen)) and piece.color != color:
+                    if piece[1] in 'BQ' and piece[0] != color:
                         return True
                     break
                 r, c = r + dr, c + dc
@@ -209,7 +201,7 @@ class Board:
             while Board.inBounds((r, c)):
                 piece = self.grid[r,c]
                 if piece is not None:
-                    if isinstance(piece,(Rook,Queen)) and piece.color != color:
+                    if piece[1] in 'RQ' and piece[0] != color:
                         return True
                     break
                 r, c = r + dr, c + dc

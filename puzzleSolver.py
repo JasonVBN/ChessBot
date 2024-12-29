@@ -1,7 +1,7 @@
 import time
 from tkinter import *
 import numpy as np
-from Board2 import Board
+from Board3 import Board
 from ForcedMate import Mater
 
 root = Tk()

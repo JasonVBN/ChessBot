@@ -1,4 +1,4 @@
-from Board2 import Board
+from Board3 import Board
 from Move import Move
 
 class Mater:
