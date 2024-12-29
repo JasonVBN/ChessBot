@@ -67,16 +67,17 @@ class Board:
             take left, take right
             '''
             dir = -1 if piece.color=='w' else +1
-            if self.grid[startR+dir, startC] is None:
+            if 0 <= startR+dir <= 7 and self.grid[startR+dir, startC] is None:
                 ans.append((startR+dir, startC))    # forward 1
                 if ((piece.color=='w' and startR==6) or
                     (piece.color=='b' and startR==1)) and self.grid[startR+2*dir, startC] is None:
                     ans.append((startR+2*dir, startC))  # forward 2
             for dc in [-1,1]:
-                if 0 <= startC+dc <= 7:
-                    diag = self.grid[startR+dir, startC+dc]
+                newpos = (startR+dir, startC+dc)
+                if Board.inBounds(newpos):
+                    diag = self.grid[newpos]
                     if diag is not None and diag.color != thisColor:
-                        ans.append((startR+dir, startC+dc))
+                        ans.append(newpos)
 
         elif isinstance(piece,Knight):
             deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
@@ -146,22 +147,68 @@ class Board:
         self.grid[start] = pieceToMove
         self.grid[dest] = captured
 
-    def inCheck(self, color) -> bool:
-        assert color == 'w' or color == 'b'
-
+    # original (brute force) version of inCheck. not used.
+    def inCheckSlow(self, color) -> bool:
         '''
-        pseudo-code:
         go thru all pieces of the opposite color as *color*.
-        run legalMovesFrom() on that square.
+        run squaresSeenFrom() on that square.
         if any of those squares contain King, return True
         '''
         for r in range(8):
             for c in range(8):
-                if self.grid[r,c] is not None and self.grid[r,c].color != color:
-                    squaresHit = self.squaresSeenFrom((r,c))
+                if self.grid[r, c] is not None and self.grid[r, c].color != color:
+                    squaresHit = self.squaresSeenFrom((r, c))
                     for pos in squaresHit:
                         if pos == self.kingPos[color]:
                             return True
+        return False
+
+    def inCheck(self, color) -> bool:
+        assert color == 'w' or color == 'b'
+
+        kRow,kCol = self.kingPos[color]
+        deltas = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
+        for dr,dc in deltas:
+            if Board.inBounds((kRow+dr,kCol+dc)):
+                piece = self.grid[kRow+dr,kCol+dc]
+                if (isinstance(piece,Knight) and piece.color != color):
+                    return True
+
+        deltas = [(-1,-1),(-1,1)] if color=='w' else [(1,-1),(1,1)]
+        for dr,dc in deltas:
+            if Board.inBounds((kRow+dr,kCol+dc)):
+                piece = self.grid[kRow+dr,kCol+dc]
+                if (isinstance(piece,Pawn) and piece.color != color):
+                    return True
+
+        deltas = [(1, 1), (1, -1), (-1, 1), (-1, -1), (1, 0), (-1, 0), (0, 1), (0, -1)]
+        for dr, dc in deltas:
+            if Board.inBounds((kRow + dr, kCol + dc)):
+                piece = self.grid[kRow + dr, kCol + dc]
+                if (isinstance(piece, King) and piece.color != color):
+                    return True
+
+        deltas = [(1, 1), (1, -1), (-1, 1), (-1, -1)] # diagonals
+        for dr,dc in deltas:
+            r, c = kRow + dr, kCol + dc
+            while Board.inBounds((r, c)):
+                piece = self.grid[r,c]
+                if piece is not None:
+                    if isinstance(piece,(Bishop,Queen)) and piece.color != color:
+                        return True
+                    break
+                r, c = r + dr, c + dc
+
+        deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)] # horiz/vert
+        for dr,dc in deltas:
+            r, c = kRow + dr, kCol + dc
+            while Board.inBounds((r, c)):
+                piece = self.grid[r,c]
+                if piece is not None:
+                    if isinstance(piece,(Rook,Queen)) and piece.color != color:
+                        return True
+                    break
+                r, c = r + dr, c + dc
 
         return False
 

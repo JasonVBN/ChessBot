@@ -43,7 +43,7 @@ def solve():
     mater = Mater(board)
 
     startTime = time.time()
-    found, move, n = mater.findMate('w', 3)
+    found, move, n = mater.findMate('w', 4)
     if found:
         print(f"mate in {n} found starting with: {move}")
     else:
@@ -56,6 +56,23 @@ def solve():
 
 B=Button(root, text="Solve!", command=solve)
 B.grid(row=10,column=0,columnspan=3)
+
+def setup_empty():
+    update(Board(
+        np.array([
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.']
+        ])
+    ))
+
+Bclear=Button(root, text="Clear", command=setup_empty)
+Bclear.grid(row=10,column=3,columnspan=3)
 
 def setup_br2():
     update(Board(
@@ -71,14 +88,14 @@ def setup_br2():
         ])
     ))
 
-def setup_br3():
+def setup_br4():
     update(Board(
         np.array([
             ['bR','bR','.','.','.','.','bK','.'],
             ['.','.','.','.','.','bP','bP','bP'],
+            ['bQ','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','wK','.']
@@ -99,13 +116,47 @@ def setup_start():
         ])
     ))
 
+def setup_damiano():
+    update(Board(
+        np.array([
+            ['.', '.', '.', '.', '.', 'bR', 'bK', '.'],
+            ['.', '.', '.', '.', '.', 'bP', 'bP', '.'],
+            ['.', '.', '.', '.', '.', '.', 'wP', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wK', '.', '.', 'wQ', 'wR']
+        ])
+    ))
+
+def setup_smother():
+    update(Board(
+        np.array([
+            ['.', '.', '.', '.', 'bR', '.', '.', 'bK'],
+            ['.', '.', '.', '.', '.', '.', 'bP', 'bP'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wQ', '.', '.', 'wN', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wK', '.', '.', '.', '.']
+        ])
+    ))
+
 B2=Button(root, text="Setup: starting position", command=setup_start)
 B2.grid(row=11,column=0,columnspan=3)
 
 B3=Button(root, text="Setup: backrank M2", command=setup_br2)
 B3.grid(row=11,column=3,columnspan=3)
 
-B4=Button(root, text="Setup: backrank M3", command=setup_br3)
+B4=Button(root, text="Setup: backrank M4", command=setup_br4)
 B4.grid(row=11,column=6,columnspan=3)
+
+B5=Button(root, text="Setup: Damiano M3", command=setup_damiano)
+B5.grid(row=12,column=0,columnspan=3)
+
+B6=Button(root, text="Setup: Smothered M4", command=setup_smother)
+B6.grid(row=12,column=3,columnspan=3)
 
 root.mainloop()
