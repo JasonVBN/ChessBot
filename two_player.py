@@ -14,7 +14,7 @@ custom = np.array([
             ['.','.','.','.','.','.','wK','.']
         ])
 
-board = Board(custom)
+board = Board()
 
 print(board)
 print("Squares are represented by 2-digit sequences [row][col]")
@@ -29,6 +29,10 @@ while True:
     if board.isMated('w'): print('white is mated')
     elif board.isMated('b'): print('black is mated')
     else: print('no one is mated')
+
+    print("all legal moves for w:")
+    for move in board.allLegalMoves('w'):
+        print(move)
 
     ipt = input("Enter START square: ")
     if ipt=='undo':

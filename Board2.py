@@ -23,15 +23,17 @@ class Board:
     def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
+        self.pieceLocations = {'w':set(), 'b':set()}
         for r in range(8):
             for c in range(8):
                 if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
+                    self.pieceLocations[col].add((r,c))
                     newpiece = Board.encoding[ptype]((r,c),col)
                     self.grid[r,c] = newpiece
                     if isinstance(newpiece,King):
                         self.kingPos[newpiece.color] = (r,c)
-        print("kingpos:",self.kingPos)
+        print(self.pieceLocations)
 
     def isEmpty(self, pos): #checks if the specified position is empty or not. Empty -> (false). Not Empty -> (true, piece)
         pass
@@ -119,12 +121,13 @@ class Board:
 
     def allLegalMoves(self,color) -> list:
         ans = []
-        for r in range(8):
-            for c in range(8):
-                start=(r,c)
-                if self.grid[start] is not None and self.grid[start].color == color:
-                    for dest in self.legalMovesFrom(start):
-                        ans.append(Move(start,dest))
+        # for r in range(8):
+        #     for c in range(8):
+        #         start=(r,c)
+        for start in self.pieceLocations[color].copy():
+            if self.grid[start] is not None and self.grid[start].color == color:
+                for dest in self.legalMovesFrom(start):
+                    ans.append(Move(start,dest))
         return ans
 
     def move(self, start, dest):
@@ -136,6 +139,12 @@ class Board:
         captured = self.grid[dest]
         self.grid[dest] = pieceToMove
         self.grid[start] = None
+
+        self.pieceLocations[pieceToMove.color].remove(start)
+        self.pieceLocations[pieceToMove.color].add(dest)
+        if captured is not None:
+            otherColor = 'w' if pieceToMove.color=='b' else 'b'
+            self.pieceLocations[otherColor].remove(dest)
         return captured
 
     def undo(self, start, dest, captured):
@@ -146,6 +155,12 @@ class Board:
 
         self.grid[start] = pieceToMove
         self.grid[dest] = captured
+
+        self.pieceLocations[pieceToMove.color].remove(dest)
+        self.pieceLocations[pieceToMove.color].add(start)
+        if captured is not None:
+            otherColor = 'w' if pieceToMove.color=='b' else 'b'
+            self.pieceLocations[otherColor].add(dest)
 
     # original (brute force) version of inCheck. not used.
     def inCheckSlow(self, color) -> bool:
