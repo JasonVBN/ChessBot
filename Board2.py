@@ -42,15 +42,15 @@ class Board:
     def inBounds(tup):
         return 0<=tup[0]<=7 and 0<=tup[1]<=7
 
-    def doesntWalkIntoMate(self, start, dest):
+    def doesntWalkIntoMate(self, move):
         # make the move
-        captured = self.move(start,dest)
+        captured = self.move(move)
 
         # check whether inCheck
-        inCheck = self.inCheck(self.grid[dest].color)
+        inCheck = self.inCheck(self.grid[move.dest].color)
 
         # UNDO the move
-        self.undo(start,dest,captured)
+        self.undo(move, captured)
 
         return not inCheck
 
@@ -117,7 +117,7 @@ class Board:
         return ans
 
     def legalMovesFrom(self, pos) -> list:
-        return [dest for dest in self.squaresSeenFrom(pos) if self.doesntWalkIntoMate(pos,dest)]
+        return [dest for dest in self.squaresSeenFrom(pos) if self.doesntWalkIntoMate(Move(pos,dest))]
 
     def allLegalMoves(self,color) -> list:
         ans = []
@@ -130,7 +130,8 @@ class Board:
                         ans.append(Move(start,dest))
         return ans
 
-    def move(self, start, dest):
+    def move(self, move):
+        start, dest = move.start, move.dest
         pieceToMove = self.grid[start]
         # if we're moving a King, update kingPos:
         if isinstance(pieceToMove,King):
@@ -142,7 +143,8 @@ class Board:
 
         return captured
 
-    def undo(self, start, dest, captured):
+    def undo(self, move, captured):
+        start, dest = move.start, move.dest
         pieceToMove = self.grid[dest]
         # if we're moving a King, update kingPos:
         if isinstance(pieceToMove, King):

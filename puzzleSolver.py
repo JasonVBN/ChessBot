@@ -51,7 +51,7 @@ def solve():
     elapsedTime = time.time()-startTime
     print(f"computing time: {elapsedTime}")
 
-    board.move(move.start, move.dest)
+    board.move(move)
     update(board)
 
 B=Button(root, text="Solve!", command=solve)
