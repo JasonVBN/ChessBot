@@ -1,0 +1,49 @@
+** original **
+
+backrank M4:
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 120.05991387367249
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 113.87653660774231
+damiano M3:
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 2.527448892593384
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 2.469951629638672
+
+** improved inCheck: always store kingPos, start at kingPos and
+    search outward for opposing pieces **
+
+backrank M4:
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 61.66907787322998
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 61.98945736885071
+damiano M3:
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 2.4221174716949463
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 2.5957298278808594
+
+** used lists to store pieces' locations - allLegalMoves no longer traverses all 64 squares **
+
+backrank M4:
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 116.10478258132935
+damiano M3:
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 0.847008466720581
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 0.6489889621734619
+
+** string representation of pieces - without storing piece locations **
+backrank M4:
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 61.94950199127197
+    mate in 4 found starting with: (4, 2) -> (0, 2)
+    computing time: 62.43974471092224
+damiano M3:
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 1.7769968509674072
+    mate in 3 found starting with: (7, 7) -> (0, 7)
+    computing time: 1.8340561389923096
