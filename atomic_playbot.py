@@ -1,7 +1,7 @@
 import time
 from tkinter import *
 import numpy as np
-from Board3 import Board
+from AtomicBoard import ABoard
 from ForcedMate import Mater
 
 root = Tk()
@@ -38,16 +38,16 @@ def update(board):
 
 def solve():
     setup = np.array([[cells[r][c].get() for c in range(8)] for r in range(8)])
-    board = Board(setup=setup)
+    board = ABoard(setup=setup)
 
     mater = Mater(board)
 
     startTime = time.time()
     found, move, n = mater.findMate('w', 4)
     if found:
-        print(f"mate in {n} found starting with: {move}")
+        print(f"forced win in {n} found starting with: {move}")
     else:
-        print("no mate found :(")
+        print("no forced win found :(")
     elapsedTime = time.time()-startTime
     print(f"computing time: {elapsedTime}")
 
@@ -58,7 +58,7 @@ B=Button(root, text="Solve!", command=solve)
 B.grid(row=10,column=0,columnspan=3)
 
 def setup_empty():
-    update(Board(
+    update(ABoard(
         np.array([
             ['.','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
@@ -74,36 +74,36 @@ def setup_empty():
 Bclear=Button(root, text="Clear", command=setup_empty)
 Bclear.grid(row=10,column=3,columnspan=3)
 
-def setup_br2():
-    update(Board(
+def setup_horsesac():
+    update(ABoard(
         np.array([
-            ['bR','.','.','.','.','.','bK','.'],
-            ['.','.','.','.','.','bP','bP','bP'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','wK','.']
+            ['bR', '--', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+            ['bP', 'bP', 'bP', 'bP', 'bP', '--', 'bP', 'bP'],
+            ['--', '--', 'bN', '--', '--', 'bP', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', 'wP', 'wN', '--', '--'],
+            ['wP', 'wP', 'wP', 'wP', '--', 'wP', 'wP', 'wP'],
+            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', '--', 'wR']
         ])
     ))
 
-def setup_br4():
-    update(Board(
+def setup_d7f7fork():
+    update(ABoard(
         np.array([
-            ['bR','bR','.','.','.','.','bK','.'],
-            ['.','.','.','.','.','bP','bP','bP'],
-            ['bQ','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','wK','.']
+            ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+            ['bP', 'bP', 'bP', 'bP', '--', 'bP', 'bP', 'bP'],
+            ['--', '--', '--', '--', 'bP', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', 'wN', '--', '--'],
+            ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', '--', 'wR']
         ])
     ))
 
 def setup_start():
-    update(Board(
+    update(ABoard(
         np.array([
             ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
             ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -116,22 +116,22 @@ def setup_start():
         ])
     ))
 
-def setup_damiano():
-    update(Board(
+def setup_queendance():
+    update(ABoard(
         np.array([
-            ['.', '.', '.', '.', '.', 'bR', 'bK', '.'],
-            ['.', '.', '.', '.', '.', 'bP', 'bP', '.'],
-            ['.', '.', '.', '.', '.', '.', 'wP', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', 'wK', '.', '.', 'wQ', 'wR']
+            ['bR', '--', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+            ['bP', 'bP', 'bP', 'bP', 'bP', '--', 'bP', 'bP'],
+            ['--', '--', 'bN', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', 'wP', '--', '--', '--'],
+            ['wP', 'wP', 'wP', 'wP', '--', 'wP', 'wP', 'wP'],
+            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', '--', 'wR']
         ])
     ))
 
 def setup_smother():
-    update(Board(
+    update(ABoard(
         np.array([
             ['.', '.', '.', '.', 'bR', '.', '.', 'bK'],
             ['.', '.', '.', '.', '.', '.', 'bP', 'bP'],
@@ -147,13 +147,13 @@ def setup_smother():
 B2=Button(root, text="Setup: starting position", command=setup_start)
 B2.grid(row=11,column=0,columnspan=3)
 
-B3=Button(root, text="Setup: backrank M2", command=setup_br2)
+B3=Button(root, text="Setup: d7+f7 fork M2", command=setup_d7f7fork)
 B3.grid(row=11,column=3,columnspan=3)
 
-B4=Button(root, text="Setup: backrank M4", command=setup_br4)
+B4=Button(root, text="Setup: horse sac M5", command=setup_horsesac)
 B4.grid(row=11,column=6,columnspan=3)
 
-B5=Button(root, text="Setup: Damiano M3", command=setup_damiano)
+B5=Button(root, text="Setup: queen dance M4", command=setup_queendance)
 B5.grid(row=12,column=0,columnspan=3)
 
 B6=Button(root, text="Setup: Smothered M4", command=setup_smother)

@@ -1,0 +1,21 @@
+** original **
+
+forced win in 2 found starting with: (5, 5) -> (3, 4)
+computing time: 0.003996133804321289
+forced win in 2 found starting with: (5, 5) -> (3, 4)
+computing time: 0.008015632629394531
+
+forced win in 4 found starting with: (7, 3) -> (3, 7)
+computing time: 24.02199625968933
+forced win in 4 found starting with: (7, 3) -> (3, 7)
+computing time: 25.305999279022217
+
+** keep alive/dead state - isMated no longer has to search whole grid for K **
+
+forced win in 2 found starting with: (5, 5) -> (3, 4)
+computing time: 0.004029989242553711
+forced win in 2 found starting with: (5, 5) -> (3, 4)
+computing time: 0.0032007694244384766
+
+forced win in 4 found starting with: (7, 3) -> (3, 7)
+computing time: 20.49715828895569

@@ -1,20 +1,20 @@
 import numpy as np
-from Board2 import Board
+from AtomicBoard import ABoard
 from ForcedMate import Mater
 from Move import Move
 
 custom = np.array([
-            ['bR','.','.','.','.','.','bK','.'],
-            ['bP','bB','.','.','.','.','bP','bP'],
             ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','wR','bR','.','.','.'],
-            ['.','.','wB','.','.','wP','bQ','.'],
             ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','wP','wP'],
-            ['.','.','.','.','.','.','wK','.']
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.']
         ])
 
-board = Board()
+board = ABoard()
 
 print(board)
 print("Squares are represented by 2-digit sequences [row][col]")
@@ -22,17 +22,13 @@ print("For example '00' is top left square, '77' is bottom right square")
 lastmove = Move()
 lastcap = None
 while True:
-    if board.inCheck('w'): print("white is in check")
-    elif board.inCheck('b'): print("black is in check")
-    else: print("no one is in check")
+    # if board.isMated('w'): print('white is mated')
+    # elif board.isMated('b'): print('black is mated')
+    # else: print('no one is mated')
 
-    if board.isMated('w'): print('white is mated')
-    elif board.isMated('b'): print('black is mated')
-    else: print('no one is mated')
-
-    print("all legal moves for w:")
-    for move in board.allLegalMoves('w'):
-        print(move)
+    # print("all legal moves for w:")
+    # for move in board.allLegalMoves('w'):
+    #     print(move)
 
     ipt = input("Enter START square: ")
     if ipt=='undo':

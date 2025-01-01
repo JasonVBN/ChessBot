@@ -1,95 +1,163 @@
-import numpy as np
 import time
-from Board2 import Board
-from ForcedMate import Mater
-from Pawn import Pawn
-from Knight import Knight
-from Bishop import Bishop
-from Rook import Rook
-from Queen import Queen
+from tkinter import *
+import numpy as np
+from Board3 import Board
+from Engine import Engine
 
-# back rank mate in 2:
-# setup = np.array([
-#     ['bR','.','.','.','.','.','bK','.'],
-#     ['.','.','.','.','.','bP','bP','bP'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','.','.','.','.','.','.'],
-#     ['.','.','wR','.','.','.','.','.'],
-#     ['.','.','wR','.','.','.','wK','.']
-# ])
+root = Tk()
+root.geometry("500x300")
 
-# rook sac mate in 3:
-setup = np.array([
-    ['.','.','.','.','.','bR','bK','.'],
-    ['.','.','.','bP','.','.','bP','.'],
-    ['.','.','.','.','bP','.','wP','.'],
-    ['.','.','.','.','.','.','.','.'],
-    ['.','.','.','.','.','.','.','.'],
-    ['.','.','.','.','.','.','.','.'],
-    ['.','.','.','.','.','.','.','.'],
-    ['.','.','wK','wQ','.','.','.','wR']
-])
+setup = np.array([['' for c in range(8)] for r in range(8)])
 
-board = Board(setup=setup)
+cells = [[None for c in range(8)] for r in range(8)]
 
-print("Computer is white, you are black")
-print("Squares are represented by 2-digit sequences [row][col]")
-print("For example '00' is top left square, '77' is bottom right square")
+FONT = ('Arial', 12, 'bold')
 
-print(board)
+### SETUP THE GRID ###
 
-turn = 'w'
-while True:
-    if turn == 'w':
-        startTime = time.time()
-        mater = Mater(board)
+for c in range(8): # header row
+    e = Entry(root, width=5,font=FONT)
+    e.grid(row=0, column=c+1)
+    e.insert(END, c)
+for r in range(1,9):
+    e = Entry(root, width=5,font=FONT)
+    e.grid(row=r, column=0)
+    e.insert(END, r-1)
+    for c in range(1,9):
+        e = Entry(root, width=5,font=FONT)
+        e.grid(row=r, column=c)
+        val = setup[r-1,c-1]
+        e.insert(END,'.' if val is None else str(val))
+        cells[r-1][c-1] = e
 
-        found, move, n = mater.findMate('w',3)
-        if found:
-            print(f"mate in {n} found starting with: {move}")
-        else:
-            print("no mate found :(")
+def update(board):
+    for r in range(8):
+        for c in range(8):
+            e = cells[r][c]
+            e.delete(0,last=len(e.get()))
+            newval = board.grid[r,c]
+            e.insert(END, '' if newval is None else str(newval))
 
-        board.move(move.start, move.dest)
-        elapsedTime = time.time() - startTime
-        print(f"Move time: {elapsedTime}")
-        turn = 'b'
-    else:
-        print("Computer has made its move. Your turn!")
+# THIS IS THE PRIMARY FUNCTION
+def solve():
+    setup = np.array([[cells[r][c].get() for c in range(8)] for r in range(8)])
+    board = Board(setup=setup)
 
-        while True:
-            ipt = input("Enter START square: ")
-            start = (int(ipt[0]), int(ipt[1]))
-            legal = board.legalMovesFrom(start)
-            if len(legal) == 0:
-                print("no legal moves from here!")
-                continue
+    eng = Engine(board)
+    print("evaluation of current position:",eng.evaluation())
+    startTime = time.time()
+    # bestEval, move = eng.bestMoveIn1('w')
+    move = eng.bestMove('w', 3, True)
+    print(f"engine move: {move}")
+    elapsedTime = time.time()-startTime
+    print(f"computing time: {elapsedTime}")
 
-            print("legal moves:", legal)
+    board.move(move)
+    update(board)
 
-            ipt = input("Enter DEST square: ")
-            dest = (int(ipt[0]), int(ipt[1]))
-            print(board)
-            if dest in legal:
-                board.move(start, dest)
-                break
-            else:
-                print("not a legal move!")
-        turn = 'w'
+B=Button(root, text="Solve!", command=solve)
+B.grid(row=10,column=0,columnspan=3)
 
-    print(board)
+def setup_empty():
+    update(Board(
+        np.array([
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.']
+        ])
+    ))
 
-    if board.isMated('w'):
-        print('BLACK WINS')
-        break
-    elif board.isMated('b'):
-        print('WHITE WINS')
-        break
+Bclear=Button(root, text="Clear", command=setup_empty)
+Bclear.grid(row=10,column=3,columnspan=3)
 
-    if board.inCheck('w'): print("white is in check")
-    elif board.inCheck('b'): print("black is in check")
-    else: print("no one is in check")
+def setup_br2():
+    update(Board(
+        np.array([
+            ['bR','.','.','.','.','.','bK','.'],
+            ['.','.','.','.','.','bP','bP','bP'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','wK','.']
+        ])
+    ))
 
-    print()
+def setup_br4():
+    update(Board(
+        np.array([
+            ['bR','bR','.','.','.','.','bK','.'],
+            ['.','.','.','.','.','bP','bP','bP'],
+            ['bQ','.','.','.','.','.','.','.'],
+            ['.','.','.','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','.','.'],
+            ['.','.','wR','.','.','.','wK','.']
+        ])
+    ))
+
+def setup_start():
+    update(Board(
+        np.array([
+            ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+            ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+        ])
+    ))
+
+def setup_damiano():
+    update(Board(
+        np.array([
+            ['.', '.', '.', '.', '.', 'bR', 'bK', '.'],
+            ['.', '.', '.', '.', '.', 'bP', 'bP', '.'],
+            ['.', '.', '.', '.', '.', '.', 'wP', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wK', '.', '.', 'wQ', 'wR']
+        ])
+    ))
+
+def setup_smother():
+    update(Board(
+        np.array([
+            ['.', '.', '.', '.', 'bR', '.', '.', 'bK'],
+            ['.', '.', '.', '.', '.', '.', 'bP', 'bP'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wQ', '.', '.', 'wN', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', 'wK', '.', '.', '.', '.']
+        ])
+    ))
+
+B2=Button(root, text="Setup: starting position", command=setup_start)
+B2.grid(row=11,column=0,columnspan=3)
+
+B3=Button(root, text="Setup: backrank M2", command=setup_br2)
+B3.grid(row=11,column=3,columnspan=3)
+
+B4=Button(root, text="Setup: backrank M4", command=setup_br4)
+B4.grid(row=11,column=6,columnspan=3)
+
+B5=Button(root, text="Setup: Damiano M3", command=setup_damiano)
+B5.grid(row=12,column=0,columnspan=3)
+
+B6=Button(root, text="Setup: Smothered M4", command=setup_smother)
+B6.grid(row=12,column=3,columnspan=3)
+
+root.mainloop()
