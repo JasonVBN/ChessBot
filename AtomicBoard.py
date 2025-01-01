@@ -43,11 +43,7 @@ class ABoard:
         thisColor = piece[0]
 
         if piece[1]=='P':
-            '''
-            4 cases:
-            forward 1, forward 2 (if on starting row - 6 for white, 1 for black)
-            take left, take right
-            '''
+            # 4 cases: forward 1, forward 2, take left, take right
             dir = -1 if piece[0]=='w' else +1
             if 0 <= startR+dir <= 7 and self.grid[startR+dir, startC] is None:
                 ans.append((startR+dir, startC))    # forward 1
@@ -61,15 +57,9 @@ class ABoard:
                     if diag is not None and diag[0] != thisColor:
                         ans.append(newpos)
 
-        elif piece[1]=='N':
-            deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
-            for dr,dc in deltas:
-                newpos = (startR+dr,startC+dc)
-                if (ABoard.inBounds(newpos) and
-                        (self.grid[newpos] is None or self.grid[newpos][0] != thisColor)):
-                    ans.append(newpos)
-        elif piece[1]=='K':
-            deltas = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+        elif piece[1]=='N' or piece[1]=='K':
+            deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)] if piece[1]=='N' \
+                else [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (ABoard.inBounds(newpos) and

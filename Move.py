@@ -1,5 +1,6 @@
 class Move:
     def __init__(self,start=None,dest=None):
+        # start and dest are both tuples
         self.start = start
         self.dest = dest
 

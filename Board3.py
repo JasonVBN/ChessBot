@@ -21,7 +21,7 @@ class Board:
                 if setup[r,c] not in ['', '.', ' ']:    # denote empty squares
                     col,ptype = setup[r,c]
                     # self.pieceLocations[col].append((r,c))
-                    self.grid[r,c] = setup[r,c]
+                    self.grid[r,c] = col.lower() + ptype.upper()
                     if ptype=='K':
                         self.kingPos[col] = (r,c)
         print("using string rep of pieces")
@@ -72,17 +72,11 @@ class Board:
                     if diag is not None and diag[0] != thisColor:
                         ans.append(newpos)
 
-        elif piece[1]=='N':
-            deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
-            for dr,dc in deltas:
-                newpos = (startR+dr,startC+dc)
-                if (Board.inBounds(newpos) and
-                        (self.grid[newpos] is None or self.grid[newpos][0] != thisColor)):
-                    ans.append(newpos)
-        elif piece[1]=='K':
-            deltas = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
-            for dr,dc in deltas:
-                newpos = (startR+dr,startC+dc)
+        elif piece[1]=='N' or piece[1]=='K':
+            deltas = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)] if piece[1] == 'N' \
+                else [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+            for dr, dc in deltas:
+                newpos = (startR + dr, startC + dc)
                 if (Board.inBounds(newpos) and
                         (self.grid[newpos] is None or self.grid[newpos][0] != thisColor)):
                     ans.append(newpos)

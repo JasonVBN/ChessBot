@@ -81,15 +81,9 @@ class Board:
                     if diag is not None and diag.color != thisColor:
                         ans.append(newpos)
 
-        elif isinstance(piece,Knight):
-            deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
-            for dr,dc in deltas:
-                newpos = (startR+dr,startC+dc)
-                if (Board.inBounds(newpos) and
-                        (self.grid[newpos] is None or self.grid[newpos].color != thisColor)):
-                    ans.append(newpos)
-        elif isinstance(piece, King):
-            deltas = [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+        elif isinstance(piece,(Knight,King)):
+            deltas = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)] if isinstance(piece,Knight) \
+                else [(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
             for dr,dc in deltas:
                 newpos = (startR+dr,startC+dc)
                 if (Board.inBounds(newpos) and
