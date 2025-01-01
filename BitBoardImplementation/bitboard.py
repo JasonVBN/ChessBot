@@ -8,6 +8,8 @@ class bitboard:
         self.wboards = {} #Contains bitboards of all white pieces on the board
         self.bboards = {} #Contains bitboards of all black pieces on the board
         self.color = color
+        self.kingpos = 5
+    #function to initialize the board
     def initializeBoard(self):
         #white pieces
         for i in [chr(j) for j in range(97,105)]:
@@ -33,16 +35,62 @@ class bitboard:
         self.bboards[self.genQueen(self.calibrate('d8'))] = self.calibrate('d8')
         self.bboards[self.genKing(self.calibrate('e8'))] = self.calibrate('e8')
         self.genBoardBit('b')
-
+    #Helper function to generate bitboard for the given color using the respective dictionaries
     def genBoardBit(self, color):
         if color == 'w':
             for piece in self.wboards:
                 self.wboard |=  2**64>>self.wboards[piece]
+            print(self.wboard)
         elif color == 'b':
             for piece in self.bboards:
                 self.bboard |= 2**64>>self.bboards[piece]
+    #Generating attacking bitboards for each piece regardless of color
+    def genKing(self, currentsquare, blocker=0, blocker1=0):
+        directions = [-1, 1, -7, -8, -9, 7, 8, 9]
+        brs = 2**64>>currentsquare
 
-    def genBishopBit(self, currentsquare, blocker=0):
+        for i in directions:
+            if currentsquare % 8 == 1 and (i == -1 or i == -9 or i == 7):
+                continue
+            elif currentsquare % 8 == 0 and (i == 1 or i == 9 or i == -7):
+                continue
+            if currentsquare+i > 0 and currentsquare + i < 64:
+                if blocker & 2 ** 64 >> currentsquare+i == 2 ** 64 >> currentsquare+i:
+                    continue
+                #if blocker1 & 2 ** 64 >> currentsquare+i:
+                    #brs |= 2 ** 64 >> currentsquare+i
+                    #break
+                brs |= 2 ** 64 >> currentsquare + i
+        return brs
+    def genQueen(self,currentsquare, blocker=0):
+        brs = self.genBishopBit(currentsquare, blocker) | self.genRook(currentsquare, blocker)
+        return brs
+    def genRook(self, currentsquare, blocker=0,blocker1=0):
+        brs = 2 ** 64 >> currentsquare
+        row = currentsquare // 8 if currentsquare % 8 != 0 else currentsquare // 8 - 1  # index from 0
+        for i in range((row) * 8 + 1, (row + 1) * 8 + 1):
+            if self.wboard & 2 ** 64 >> currentsquare == 2 ** 64 >> currentsquare:
+                break
+            if blocker1 & 2 ** 64 >> currentsquare:
+                brs |= 2 ** 64 >> currentsquare
+                break
+            brs |= 2 ** 64 >> i
+
+        directions = [-8, 8]
+        for i in directions:
+            while True:
+                if currentsquare + i > 0 and currentsquare + i <= 64:
+                    currentsquare += i
+                    if self.wboard & 2 ** 64 >> currentsquare == 2**64>>currentsquare :
+                        break
+                    if blocker1 & 2 ** 64 >> currentsquare:
+                        brs |= 2 ** 64 >> currentsquare
+                        break
+                    brs |= 2 ** 64 >> currentsquare
+                else:
+                    break
+        return brs
+    def genBishopBit(self, currentsquare, blocker=0,blocker1=0):
         brs = 2 ** 64 >> currentsquare
         directions = [-7, -9, 7, 9]
         for i in directions:
@@ -60,37 +108,13 @@ class bitboard:
                         break
                 else:
                     break
-                if blocker & 2 ** 64 >> currentsquare1:
+                if self.wboard & 2 ** 64 >> currentsquare == 2 ** 64 >> currentsquare:
+                    break
+                if blocker1 & 2 ** 64 >> currentsquare:
+                    brs |= 2 ** 64 >> currentsquare
                     break
                 brs |= 2 ** 64 >> currentsquare1
         return brs
-
-
-    def genQueen(self,currentsquare, blocker=0):
-        brs = self.genBishopBit(currentsquare, blocker) | self.genRook(currentsquare, blocker)
-        return brs
-
-
-    def genRook(self, currentsquare, blocker=0):
-        brs = 2 ** 64 >> currentsquare
-        row = currentsquare // 8 if currentsquare % 8 != 0 else currentsquare // 8 - 1  # index from 0
-        for i in range((row) * 8 + 1, (row + 1) * 8 + 1):
-            if blocker & 2 ** 64 >> i:
-                break
-            brs |= 2 ** 64 >> i
-
-        directions = [-8, 8]
-        for i in directions:
-            while True:
-                if currentsquare + i > 0 and currentsquare + i <= 64:
-                    currentsquare += i
-                    if blocker & 2 ** 64 >> currentsquare:
-                        break
-                    brs |= 2 ** 64 >> currentsquare
-                else:
-                    break
-        return brs
-
     def genKnight(self, currentsquare):
         brs = 2 ** 64 >> currentsquare
         directions = [-6, -15, -17, -10, 6, 15, 17, 10]
@@ -103,22 +127,6 @@ class bitboard:
                 if row - 2 <= row1 <= row + 2 and col - 2 <= col1 <= col + 2:
                     brs |= 2 ** 64 >> currentsquare + i
         return brs
-    def genKing(self, currentsquare, blocker=0):
-        directions = [-1, 1, -7, -8, -9, 7, 8, 9]
-        brs = 2**64>>currentsquare
-
-        for i in directions:
-            if currentsquare % 8 == 1 and (i == -1 or i == -9 or i == 7):
-                continue
-            elif currentsquare % 8 == 0 and (i == 1 or i == 9 or i == -7):
-                continue
-            if currentsquare + i > 0 and currentsquare + i < 64:
-                if blocker & 2 ** 64 >> currentsquare:
-                    break
-                brs |= 2 ** 64 >> currentsquare + i
-        return brs
-
-
     def genPawn(self, currentsquare, color, blocker=0):
         directions = [1, 2]
         row = currentsquare//8
@@ -142,10 +150,12 @@ class bitboard:
                     if row-1<=row1<=row+1 and col-1<=col1<=col+1:
                         brs |= 2**64 >> currentsquare-9
         return brs
+    #converts chess position in the form of 'a1' to bitboard values ranging from 1 to 64 inclusive
     def calibrate(self, position):
         row = 8-int(position[1])
         col = ord(position[0])-96
         return row*8 + col
+    #returns bitboard corresponding to the piece at the given position
     def findpiece(self, position):
         if self.color == 'w':
             for i in self.wboards:
@@ -155,6 +165,7 @@ class bitboard:
             for i in self.bboards:
                 if self.bboards[i] == position:
                     return i
+    #generates a piece of the color, type, and at the position that is given
     def genPiece(self, color, type, pos):
         if type == 'kn':
             return self.genKnight(pos)
@@ -168,6 +179,8 @@ class bitboard:
             return self.genRook(pos)
         if type == 'k':
             return self.genKing(pos)
+    #moves a piece
+    #TODO: Enable capturing
     def move(self, color, type, startposition, endposition):
         startnumpos = self.calibrate(startposition)
         endnumpos = self.calibrate(endposition)
@@ -185,6 +198,7 @@ class bitboard:
             self.bboard |= 2 ** 64 >> endnumpos
             del self.wboards[bit]
             self.bboards[self.genPiece(color, type, endnumpos)] = endnumpos
+    #Visualize bitboard given the actual integer representing the bitboard
     def visualizer(self, bits):
         if bits > 0:
             if len(str(bin(bits))[2:]) == 64:
@@ -222,37 +236,17 @@ class bitboard:
                         c = ''
                     c += bits[i]
                 print(c)
-
-
+    #bitwise inversion of the given bitboard
     def inversion(self, bits):
         c = ''
         for i in str(bin(bits))[3:]:
             c += str([1, 0][int(i)])
         return int('0b' + c, 2)
-
-
+    #Takes all the pieces in the board and marks their position as 0 while their attacks remain as 1
     def modifyOppBoard(self, board):
         boardc = []
         for i in board:
-            boardc.append(i ^ 2 ** 64 >> board[i][0])
+            boardc.append(i ^ 2 ** 64 >> board[i])
         return boardc
-
-
-    def isMated(self, kingbit, kingpos, color):
-        original = kingbit
-        twocopy = kingbit
-        if color == 'w':
-            b = 0
-            board = self.modifyOppBoard(self.bboards)
-            for i in board:
-                b |= i
-            kingbit = b ^ kingbit
-            # visualizer(kingbit)
-            w = 0
-            for i in self.wboards:
-                w |= i
-            kingbit = (w | kingbit)
-            twocopy |= kingbit
-        if (twocopy) ^ kingbit == original:
-            return True
-        return False
+    #Checks if the given color is in a checkmate
+    def isMated(self, color):
