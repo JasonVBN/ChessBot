@@ -16,15 +16,15 @@ FONT = ('Arial', 12, 'bold')
 ### SETUP THE GRID ###
 
 for c in range(8): # header row
-    e = Entry(root, width=5,font=FONT)
+    e = Entry(root, width=4,font=FONT)
     e.grid(row=0, column=c+1)
     e.insert(END, c)
 for r in range(1,9):
-    e = Entry(root, width=5,font=FONT)
+    e = Entry(root, width=4,font=FONT)
     e.grid(row=r, column=0)
     e.insert(END, r-1)
     for c in range(1,9):
-        e = Entry(root, width=5,font=FONT)
+        e = Entry(root, width=4,font=FONT)
         e.grid(row=r, column=c)
         val = setup[r-1,c-1]
         e.insert(END,'.' if val is None else str(val))
@@ -38,18 +38,19 @@ def update(board):
             newval = board.grid[r,c]
             e.insert(END, '' if newval is None else str(newval))
 
-# THIS IS THE PRIMARY FUNCTION
+### THIS IS THE PRIMARY FUNCTION
 def solve():
+    print("\ncalculating...")
     setup = np.array([[cells[r][c].get() for c in range(8)] for r in range(8)])
     board = Board(setup=setup)
 
     eng = Engine(board)
-    print("evaluation of current position:",eng.board.evaluation())
+    print("current eval:",board.evaluation())
     startTime = time.time()
     # bestEval, move = eng.bestMoveIn1('w')
     # move = eng.bestMove('w', 3, True)
-    bestEval,move = eng.bestMoveInX('w',2)
-    print(f"engine move: {move}")
+    bestEval,move = eng.bestMoveInX('w',3)
+    print(f"engine move: {move} | eval with depth 3: {bestEval}")
     elapsedTime = time.time()-startTime
     print(f"computing time: {elapsedTime}")
 
@@ -85,20 +86,6 @@ def setup_br2():
             ['.','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
             ['.','.','.','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','wK','.']
-        ])
-    ))
-
-def setup_br4():
-    update(Board(
-        np.array([
-            ['bR','bR','.','.','.','.','bK','.'],
-            ['.','.','.','.','.','bP','bP','bP'],
-            ['bQ','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
-            ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','.','.'],
             ['.','.','wR','.','.','.','wK','.']
         ])
@@ -146,14 +133,11 @@ def setup_smother():
         ])
     ))
 
-B2=Button(root, text="Setup: starting position", command=setup_start)
+B2=Button(root, text="starting position", command=setup_start)
 B2.grid(row=11,column=0,columnspan=3)
 
 B3=Button(root, text="Setup: backrank M2", command=setup_br2)
 B3.grid(row=11,column=3,columnspan=3)
-
-B4=Button(root, text="Setup: backrank M4", command=setup_br4)
-B4.grid(row=11,column=6,columnspan=3)
 
 B5=Button(root, text="Setup: Damiano M3", command=setup_damiano)
 B5.grid(row=12,column=0,columnspan=3)

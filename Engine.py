@@ -7,10 +7,13 @@ class Engine:
         return self.board.allLegalMoves(color)
         # just to save a few characters when calling lol
 
+    def allMoves(self,color):
+        return self.board.allMoves(color)
+
     def bestMoveIn1(self, color):
         bestMove = None
         bestEval = -1000
-        for move in self.board.allLegalMoves(color):
+        for move in self.board.allMoves(color):
             # make move
             captured = self.board.move(move)
 
@@ -29,11 +32,11 @@ class Engine:
             return self.bestMoveIn1(color)
         bestMove = None
         bestEval = -1000
-        for ourmove in self.allLegalMoves(color):
+        for ourmove in self.allMoves(color):
             ourcaptured = self.board.move(ourmove)
 
             minEval = 1000
-            for theirmove in self.allLegalMoves('w' if color == 'b' else 'b'):
+            for theirmove in self.allMoves('w' if color == 'b' else 'b'):
                 theircaptured = self.board.move(theirmove)
                 e,move = self.bestMoveInX(color,depth-1)
                 self.board.undo(theirmove,theircaptured)

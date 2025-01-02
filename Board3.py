@@ -26,7 +26,7 @@ class Board:
                     if ptype=='K':
                         self.kingPos[col] = (r,c)
         self.ev = self.evaluation()
-        print("using string rep of pieces")
+        # print("using string rep of pieces")
 
     def evaluation(self):
         pieceValues = {}
@@ -41,7 +41,7 @@ class Board:
             for c in range(8):
                 piece = self.grid[r, c]
                 if piece is not None:
-                    c+=pieceValues[piece]
+                    e+=pieceValues[piece]
         return e
 
     @staticmethod
@@ -127,6 +127,16 @@ class Board:
         # for start in self.pieceLocations[color].copy():
                 if self.grid[start] is not None and self.grid[start][0] == color:
                     for dest in self.legalMovesFrom(start):
+                        ans.append(Move(start,dest))
+        return ans
+
+    def allMoves(self,color) -> list: # moves into check ARE allowed !!
+        ans = []
+        for r in range(8):
+            for c in range(8):
+                start=(r,c)
+                if self.grid[start] is not None and self.grid[start][0] == color:
+                    for dest in self.squaresSeenFrom(start):
                         ans.append(Move(start,dest))
         return ans
 
