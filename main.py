@@ -44,10 +44,11 @@ def solve():
     board = Board(setup=setup)
 
     eng = Engine(board)
-    print("evaluation of current position:",eng.evaluation())
+    print("evaluation of current position:",eng.board.evaluation())
     startTime = time.time()
     # bestEval, move = eng.bestMoveIn1('w')
-    move = eng.bestMove('w', 3, True)
+    # move = eng.bestMove('w', 3, True)
+    bestEval,move = eng.bestMoveInX('w',2)
     print(f"engine move: {move}")
     elapsedTime = time.time()-startTime
     print(f"computing time: {elapsedTime}")

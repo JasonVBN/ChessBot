@@ -1,24 +1,11 @@
 from Board3 import Board
 class Engine:
-    VALUES = {'P':1, 'N':3, 'B':3, 'R':5, 'Q':9, 'K':100}
     def __init__(self, board):
         self.board = board
-        self.pieceValues = {}
 
-        blackpieces=['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR', 'bP']
-        whitepieces=['wR','wN','wB','wQ','wK','wB','wN','wR', 'wP']
-        for p in blackpieces:
-            self.pieceValues[p] = -self.VALUES[p[1]]
-        for p in whitepieces:
-            self.pieceValues[p] = self.VALUES[p[1]]
-        print(self.pieceValues)
-
-    def evaluation(self):
-        c=0
-        for row in self.board.grid:
-            for piece in row:
-                if piece is not None: c+=self.pieceValues[piece]
-        return c
+    def allLegalMoves(self, color):
+        return self.board.allLegalMoves(color)
+        # just to save a few characters when calling lol
 
     def bestMoveIn1(self, color):
         bestMove = None
@@ -27,8 +14,8 @@ class Engine:
             # make move
             captured = self.board.move(move)
 
-            # calculate evaluation & update bestEval
-            e=self.evaluation()
+            # calculate evaluation, update bestMove & bestEval
+            e=self.board.ev
             if e > bestEval:
                 bestMove = move
                 bestEval = e
@@ -36,6 +23,32 @@ class Engine:
             # undo move
             self.board.undo(move,captured)
         return bestEval,bestMove
+
+    def bestMoveInX(self,color,depth):
+        if depth==1:
+            return self.bestMoveIn1(color)
+        bestMove = None
+        bestEval = -1000
+        for ourmove in self.allLegalMoves(color):
+            ourcaptured = self.board.move(ourmove)
+
+            minEval = 1000
+            for theirmove in self.allLegalMoves('w' if color == 'b' else 'b'):
+                theircaptured = self.board.move(theirmove)
+                e,move = self.bestMoveInX(color,depth-1)
+                self.board.undo(theirmove,theircaptured)
+                minEval = min(minEval,e)
+                if minEval <= bestEval:
+                    break
+
+            if minEval > bestEval:
+                bestMove = ourmove
+                bestEval = minEval
+            self.board.undo(ourmove,ourcaptured)
+        return bestEval,bestMove
+
+
+    # Daddy Srinath's code below
 
     def bestMove(self, color, depth, maxplayer):
         bM = None
@@ -75,11 +88,3 @@ class Engine:
                 # undo OUR move
                 self.board.undo(ourmove, ourcaptured)
             return minEval
-
-
-    def bestMoveInX_jn(self,color,depth):
-        if depth==1:
-            return self.bestMoveIn1(color)
-        for ourmove in self.board.allLegalMoves(color):
-            ourcaptured = self.board.move(ourmove)
-

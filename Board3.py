@@ -12,6 +12,7 @@ class Board:
         ['wP','wP','wP','wP','wP','wP','wP','wP'],
         ['wR','wN','wB','wQ','wK','wB','wN','wR']
     ])
+    VALUES = {'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100}
     def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
@@ -24,10 +25,24 @@ class Board:
                     self.grid[r,c] = col.lower() + ptype.upper()
                     if ptype=='K':
                         self.kingPos[col] = (r,c)
+        self.ev = self.evaluation()
         print("using string rep of pieces")
 
-    def isEmpty(self, pos): #checks if the specified position is empty or not. Empty -> (false). Not Empty -> (true, piece)
-        pass
+    def evaluation(self):
+        pieceValues = {}
+        blackpieces = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR', 'bP']
+        whitepieces = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR', 'wP']
+        for p in blackpieces:
+            pieceValues[p] = -self.VALUES[p[1]]
+        for p in whitepieces:
+            pieceValues[p] = self.VALUES[p[1]]
+        e=0
+        for r in range(8):
+            for c in range(8):
+                piece = self.grid[r, c]
+                if piece is not None:
+                    c+=pieceValues[piece]
+        return e
 
     @staticmethod
     def inBounds(tup):
@@ -123,6 +138,8 @@ class Board:
             self.kingPos[pieceToMove[0]] = dest
 
         captured = self.grid[dest]
+        if captured is not None:
+            self.ev -= (1 if captured[0]=='w' else -1)*self.VALUES[captured[1]]
         self.grid[dest] = pieceToMove
         self.grid[start] = None
 
@@ -136,7 +153,10 @@ class Board:
             self.kingPos[pieceToMove[0]] = start
 
         self.grid[start] = pieceToMove
-        self.grid[dest] = captured
+        self.grid[dest] = captured # place captured piece back
+
+        if captured is not None:
+            self.ev += (1 if captured[0]=='w' else -1)*self.VALUES[captured[1]]
 
     # original (brute force) version of inCheck. not used.
     def inCheckSlow(self, color) -> bool:
