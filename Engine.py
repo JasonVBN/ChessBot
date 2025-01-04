@@ -1,4 +1,5 @@
 from Board3 import Board
+from Move import Move
 class Engine:
     def __init__(self, board):
         self.board = board
@@ -18,37 +19,46 @@ class Engine:
             captured = self.board.move(move)
 
             # calculate evaluation, update bestMove & bestEval
-            e=self.board.ev
+            e=self.board.ev * (1 if color=='w' else -1)
             if e > bestEval:
                 bestMove = move
                 bestEval = e
 
             # undo move
             self.board.undo(move,captured)
-        return bestEval,bestMove
+        return bestEval,bestMove,[bestMove]
 
     def bestMoveInX(self,color,depth):
         if depth==1:
             return self.bestMoveIn1(color)
+        # if depth==0:
+        #     return self.board.ev,None,[]
         bestMove = None
         bestEval = -1000
+        line = [None] # for debugging purposes
         for ourmove in self.allMoves(color):
             ourcaptured = self.board.move(ourmove)
-
             minEval = 1000
+            minMove = None
+            bestSubline = []
             for theirmove in self.allMoves('w' if color == 'b' else 'b'):
                 theircaptured = self.board.move(theirmove)
-                e,move = self.bestMoveInX(color,depth-1)
+                e,move,subline = self.bestMoveInX(color,depth-1)
                 self.board.undo(theirmove,theircaptured)
-                minEval = min(minEval,e)
+                # minEval = min(minEval,e)
+                if e<minEval:
+                    minEval = e
+                    minMove = theirmove
+                    bestSubline = subline
                 if minEval <= bestEval:
                     break
 
             if minEval > bestEval:
                 bestMove = ourmove
                 bestEval = minEval
+                line = [ourmove,minMove] + bestSubline
             self.board.undo(ourmove,ourcaptured)
-        return bestEval,bestMove
+        return bestEval,bestMove,line
 
 
     # Daddy Srinath's code below

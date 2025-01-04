@@ -2,7 +2,10 @@ import time
 from tkinter import *
 import numpy as np
 from AtomicBoard import ABoard
-from ForcedMate import Mater
+from Engine import Engine
+from Presets import *
+
+DEPTH = 3
 
 root = Tk()
 root.geometry("500x300")
@@ -37,18 +40,18 @@ def update(board):
             e.insert(END, '' if newval is None else str(newval))
 
 def solve():
+    print("\ncalculating...")
     setup = np.array([[cells[r][c].get() for c in range(8)] for r in range(8)])
     board = ABoard(setup=setup)
 
-    mater = Mater(board)
+    eng = Engine(board)
 
+    print("current eval:",board.ev)
     startTime = time.time()
-    found, move, n = mater.findMate('w', 4)
-    if found:
-        print(f"forced win in {n} found starting with: {move}")
-    else:
-        print("no forced win found :(")
+    bestEval,move,line = eng.bestMoveInX('w',DEPTH)
     elapsedTime = time.time()-startTime
+    print(f"engine move: {move} | eval in {DEPTH} moves: {bestEval}")
+    for m in line: print(m)
     print(f"computing time: {elapsedTime}")
 
     board.move(move)
@@ -58,18 +61,7 @@ B=Button(root, text="Solve!", command=solve)
 B.grid(row=10,column=0,columnspan=3)
 
 def setup_empty():
-    update(ABoard(
-        np.array([
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.'],
-            ['.','.','.','.','.','.','.','.']
-        ])
-    ))
+    update(ABoard(EMPTY))
 
 Bclear=Button(root, text="Clear", command=setup_empty)
 Bclear.grid(row=10,column=3,columnspan=3)
@@ -103,18 +95,7 @@ def setup_d7f7fork():
     ))
 
 def setup_start():
-    update(ABoard(
-        np.array([
-            ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
-            ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-            ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
-        ])
-    ))
+    update(ABoard(STARTING))
 
 def setup_queendance():
     update(ABoard(
@@ -130,19 +111,6 @@ def setup_queendance():
         ])
     ))
 
-def setup_smother():
-    update(ABoard(
-        np.array([
-            ['.', '.', '.', '.', 'bR', '.', '.', 'bK'],
-            ['.', '.', '.', '.', '.', '.', 'bP', 'bP'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', 'wQ', '.', '.', 'wN', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', 'wK', '.', '.', '.', '.']
-        ])
-    ))
 
 B2=Button(root, text="Setup: starting position", command=setup_start)
 B2.grid(row=11,column=0,columnspan=3)
@@ -156,7 +124,5 @@ B4.grid(row=11,column=6,columnspan=3)
 B5=Button(root, text="Setup: queen dance M4", command=setup_queendance)
 B5.grid(row=12,column=0,columnspan=3)
 
-B6=Button(root, text="Setup: Smothered M4", command=setup_smother)
-B6.grid(row=12,column=3,columnspan=3)
 
 root.mainloop()

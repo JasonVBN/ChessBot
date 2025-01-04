@@ -12,7 +12,7 @@ class Board:
         ['wP','wP','wP','wP','wP','wP','wP','wP'],
         ['wR','wN','wB','wQ','wK','wB','wN','wR']
     ])
-    VALUES = {'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100}
+    VALUES = {'P': 10, 'N': 30, 'B': 30, 'R': 50, 'Q': 90, 'K': 1000}
     def __init__(self, setup=DEFAULT_SETUP):
         self.kingPos = { 'w':(7,4), 'b':(0,4) }
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
@@ -25,23 +25,26 @@ class Board:
                     self.grid[r,c] = col.lower() + ptype.upper()
                     if ptype=='K':
                         self.kingPos[col] = (r,c)
-        self.ev = self.evaluation()
-        # print("using string rep of pieces")
 
-    def evaluation(self):
-        pieceValues = {}
+        self.pieceValues = {}
         blackpieces = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR', 'bP']
         whitepieces = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR', 'wP']
         for p in blackpieces:
-            pieceValues[p] = -self.VALUES[p[1]]
+            self.pieceValues[p] = -self.VALUES[p[1]]
         for p in whitepieces:
-            pieceValues[p] = self.VALUES[p[1]]
+            self.pieceValues[p] = self.VALUES[p[1]]
+        self.ev = self.evaluation()
+        # print("using string rep of pieces")
+
+    def evaluation(self,color='w'):
         e=0
         for r in range(8):
             for c in range(8):
                 piece = self.grid[r, c]
                 if piece is not None:
-                    e+=pieceValues[piece]
+                    e+=self.pieceValues[piece]
+                    # if 3<=r<=4 and 3<=c<=4:
+                    #     e += 1 if piece[0]=='w' else -1
         return e
 
     @staticmethod
@@ -140,18 +143,26 @@ class Board:
                         ans.append(Move(start,dest))
         return ans
 
+    @staticmethod
+    def inCenter(pos):
+        return 3<=pos[0]<=4 and 3<=pos[1]<=4
+
     def move(self, move):
         start, dest = move.start, move.dest
         pieceToMove = self.grid[start]
         # if we're moving a King, update kingPos:
-        if pieceToMove[1]=='K':
-            self.kingPos[pieceToMove[0]] = dest
+        # if pieceToMove[1]=='K':
+        #     self.kingPos[pieceToMove[0]] = dest
 
         captured = self.grid[dest]
         if captured is not None:
-            self.ev -= (1 if captured[0]=='w' else -1)*self.VALUES[captured[1]]
+            self.ev -= self.pieceValues[captured]
+            # if Board.inCenter(dest):
+            #     self.ev -= (1 if captured[0]=='w' else -1)
         self.grid[dest] = pieceToMove
         self.grid[start] = None
+        # if Board.inCenter(dest) and not Board.inCenter(start):
+        #     self.ev += (1 if pieceToMove[0]=='w' else -1)
 
         return captured
 
@@ -159,14 +170,18 @@ class Board:
         start, dest = move.start, move.dest
         pieceToMove = self.grid[dest]
         # if we're moving a King, update kingPos:
-        if pieceToMove[1]=='K':
-            self.kingPos[pieceToMove[0]] = start
+        # if pieceToMove[1]=='K':
+        #     self.kingPos[pieceToMove[0]] = start
 
         self.grid[start] = pieceToMove
         self.grid[dest] = captured # place captured piece back
 
         if captured is not None:
-            self.ev += (1 if captured[0]=='w' else -1)*self.VALUES[captured[1]]
+            self.ev += self.pieceValues[captured]
+            # if Board.inCenter(dest):
+            #     self.ev += (1 if captured[0]=='w' else -1)
+        # if Board.inCenter(dest) and not Board.inCenter(start):
+        #     self.ev -= (1 if pieceToMove[0]=='w' else -1)
 
     # original (brute force) version of inCheck. not used.
     def inCheckSlow(self, color) -> bool:
@@ -252,5 +267,6 @@ class Board:
             ans += f"{i} "
             for cell in row:
                 ans += (' .' if cell==None else str(cell)) + ' '
-            ans+='\n'
+            ans += f'{8-i}\n'
+        ans += '   a  b  c  d  e  f  g  h\n'
         return ans

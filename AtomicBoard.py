@@ -13,6 +13,8 @@ class ABoard:
         ['wP','wP','wP','wP','wP','wP','wP','wP'],
         ['wR','wN','wB','wQ','wK','wB','wN','wR']
     ])
+    VALUES = {'wP': 10, 'wN': 30, 'wB': 30, 'wR': 50, 'wQ': 90, 'wK': 1000,
+              'bP': -10, 'bN': -30, 'bB': -30, 'bR': -50, 'bQ': -90, 'bK': -1000}
     def __init__(self, setup=DEFAULT_SETUP):
         self.grid = np.array([[None for c in range(8)] for r in range(8)])
         # self.pieceLocations = {'w':[], 'b':[]}
@@ -25,14 +27,21 @@ class ABoard:
                     self.grid[r,c] = setup[r,c]
                     if ptype=='K':
                         self.kingAlive[col] = True
+        self.ev = self.evaluation()
+        # print("ATOMIC BOARD using string rep of pieces")
 
-        print("ATOMIC BOARD using string rep of pieces")
-
+    def evaluation(self,color='w'):
+        e=0
+        for r in range(8):
+            for c in range(8):
+                piece = self.grid[r, c]
+                if piece is not None:
+                    e += self.VALUES[piece]
+        return e
 
     @staticmethod
     def inBounds(tup):
         return 0<=tup[0]<=7 and 0<=tup[1]<=7
-
 
     def squaresSeenFrom(self, pos) -> list:
         if self.grid[pos] is None:
@@ -100,6 +109,16 @@ class ABoard:
                         ans.append(Move(start,dest))
         return ans
 
+    def allMoves(self,color) -> list:
+        ans = []
+        for r in range(8):
+            for c in range(8):
+                start=(r,c)
+                if self.grid[start] is not None and self.grid[start][0] == color:
+                    for dest in self.squaresSeenFrom(start):
+                        ans.append(Move(start,dest))
+        return ans
+
     def isMated(self, color):
         # True if king is dead
         return not self.kingAlive[color]
@@ -132,7 +151,8 @@ class ABoard:
                         self.grid[boompos] = None   # kaboom.
                         if piece[1] == 'K':
                             self.kingAlive[piece[0]] = False
-
+            for piece,pos in blownup:
+                self.ev -= self.VALUES[piece]
             return blownup
 
     def undo(self, move, blownup: list):
@@ -142,12 +162,14 @@ class ABoard:
 
             self.grid[dest] = None
             self.grid[start] = pieceToMove
+            # no change in eval
         else:
             # place blown-up pieces back
             for piece,pos in blownup:
                 self.grid[pos] = piece
                 if piece[1]=='K':
                     self.kingAlive[piece[0]] = True
+                self.ev += self.VALUES[piece]
 
 
     def __str__(self):
